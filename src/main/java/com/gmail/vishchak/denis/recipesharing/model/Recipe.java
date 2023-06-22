@@ -25,7 +25,6 @@ public class Recipe {
 
     private Integer cookingTime;
 
-    private Double rating;
 
     @Temporal(TemporalType.DATE)
     private Date date;
@@ -51,6 +50,9 @@ public class Recipe {
             inverseJoinColumns = @JoinColumn(name = "ingredient_id")
     )
     private List<Ingredient> ingredients;
+
+    @OneToMany(mappedBy = "recipe")
+    private List<Rating> ratings;
 
     @OneToMany(mappedBy = "recipe")
     private List<Comment> comments;
