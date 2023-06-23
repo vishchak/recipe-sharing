@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -44,7 +45,7 @@ public class Recipe {
             joinColumns = @JoinColumn(name = "recipe_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
-    private List<Category> categories;
+    private Set<Category> categories;
 
     @ManyToMany
     @JoinTable(
@@ -68,4 +69,17 @@ public class Recipe {
 
     @ManyToMany(mappedBy = "recipes")
     private List<Collection> collections;
+
+    public Recipe(String title, String description, String image, Integer cookingTime, Date date, Difficulty difficulty, Nutrition nutrition, User user, Set<Category> categories, List<Ingredient> ingredients) {
+        this.title = title;
+        this.description = description;
+        this.image = image;
+        this.cookingTime = cookingTime;
+        this.date = date;
+        this.difficulty = difficulty;
+        this.nutrition = nutrition;
+        this.user = user;
+        this.categories = categories;
+        this.ingredients = ingredients;
+    }
 }

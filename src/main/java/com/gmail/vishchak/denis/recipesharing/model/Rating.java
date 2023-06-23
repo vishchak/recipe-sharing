@@ -23,4 +23,10 @@ public class Rating {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    public Rating(int value, Recipe recipe, User user) {
+        this.value = value;
+        this.recipe = recipe;
+        this.user = user;
+    }
 }

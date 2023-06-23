@@ -1,9 +1,8 @@
 package com.gmail.vishchak.denis.recipesharing.repository;
 
 import com.gmail.vishchak.denis.recipesharing.model.Category;
-import com.gmail.vishchak.denis.recipesharing.model.Ingredient;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
-import com.gmail.vishchak.denis.recipesharing.model.User;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -13,8 +12,6 @@ import java.util.List;
 @Repository
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     List<Recipe> findByTitleContainingIgnoreCase(String title);
-
-    List<Recipe> findByUser(User user);
 
     List<Recipe> findByCookingTimeLessThanEqual(int maxCookingTime);
 
@@ -27,6 +24,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
             """)
     List<Recipe> findByCategories(List<Category> categories);
 
-    @Query("SELECT r FROM Recipe r JOIN r.ingredients i WHERE i = ?1")
-    List<Recipe> findByIngredient(Ingredient ingredient);
+    @Query("SELECT r FROM Recipe r JOIN r.ratings rt WHERE rt.value > :rating")
+    List<Recipe> findTopRatedRecipesWithRatingGreaterThan(int rating, Pageable pageable);
 }
