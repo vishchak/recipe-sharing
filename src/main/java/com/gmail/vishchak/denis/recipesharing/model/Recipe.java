@@ -1,5 +1,6 @@
 package com.gmail.vishchak.denis.recipesharing.model;
 
+import com.gmail.vishchak.denis.recipesharing.model.enums.Difficulty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,9 +26,11 @@ public class Recipe {
 
     private Integer cookingTime;
 
-
     @Temporal(TemporalType.DATE)
     private Date date;
+
+    @Enumerated(EnumType.STRING)
+    private Difficulty difficulty;
 
     @OneToOne(mappedBy = "recipe", cascade = CascadeType.ALL)
     private Nutrition nutrition;
