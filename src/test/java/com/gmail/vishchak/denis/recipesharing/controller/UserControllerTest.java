@@ -6,6 +6,8 @@ import static org.mockito.Mockito.*;
 import com.gmail.vishchak.denis.recipesharing.dto.UserAuthDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.UserDTO;
 import com.gmail.vishchak.denis.recipesharing.exception.BadRequestException;
+import com.gmail.vishchak.denis.recipesharing.exception.NotFoundException;
+import com.gmail.vishchak.denis.recipesharing.model.User;
 import com.gmail.vishchak.denis.recipesharing.model.enums.UserRole;
 import com.gmail.vishchak.denis.recipesharing.serviceImpl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 
 class UserControllerTest {
     @Mock
@@ -70,5 +73,37 @@ class UserControllerTest {
         // Verify that the UserService's registerUser method was called
         verify(userService, times(1)).registerUser(registrationDTO);
     }
+
+    @Test
+    public void testGetUserProfile_Success() {
+        // Mock user and profile data
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("john.doe");
+        user.setEmail("john.doe@example.com");
+        user.setRole(UserRole.USER);
+        user.setImage("/images/user.png");
+        // other user properties...
+
+        UserDTO userProfile = new UserDTO(user.getId(),user.getUsername(),user.getEmail(),user.getImage(), user.getRole());
+
+        when(userService.getUserById(anyLong())).thenReturn(userProfile);
+
+        ResponseEntity<?> response = userController.getUserProfile(user.getId());
+
+        verify(userService, times(1)).getUserById(eq(user.getId()));
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(userProfile, response.getBody());
+    }
+
+    @Test
+    public void testGetUserProfile_UserNotFound() {
+        long userId = 1L;
+        when(userService.getUserById(userId)).thenThrow(NotFoundException.class);
+
+        assertThrows(NotFoundException.class, () -> userService.getUserById(userId));
+    }
+
 }
 

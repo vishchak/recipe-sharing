@@ -3,13 +3,11 @@ package com.gmail.vishchak.denis.recipesharing.controller;
 import com.gmail.vishchak.denis.recipesharing.dto.UserAuthDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.UserDTO;
 import com.gmail.vishchak.denis.recipesharing.exception.BadRequestException;
+import com.gmail.vishchak.denis.recipesharing.exception.NotFoundException;
 import com.gmail.vishchak.denis.recipesharing.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
@@ -32,5 +30,13 @@ public class UserController {
         }
     }
 
-
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDTO> getUserProfile(@PathVariable Long userId) {
+        try {
+            UserDTO userProfile = userService.getUserById(userId);
+            return ResponseEntity.status(HttpStatus.OK).body(userProfile);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
 }
