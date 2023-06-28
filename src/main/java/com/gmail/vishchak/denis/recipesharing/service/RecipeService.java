@@ -1,6 +1,6 @@
 package com.gmail.vishchak.denis.recipesharing.service;
 
-import com.gmail.vishchak.denis.recipesharing.DTO.RecipeDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
 import com.gmail.vishchak.denis.recipesharing.model.Category;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
 

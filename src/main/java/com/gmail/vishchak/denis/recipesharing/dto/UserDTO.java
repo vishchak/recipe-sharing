@@ -1,4 +1,4 @@
-package com.gmail.vishchak.denis.recipesharing.DTO;
+package com.gmail.vishchak.denis.recipesharing.dto;
 
 import com.gmail.vishchak.denis.recipesharing.model.enums.UserRole;
 import lombok.AllArgsConstructor;

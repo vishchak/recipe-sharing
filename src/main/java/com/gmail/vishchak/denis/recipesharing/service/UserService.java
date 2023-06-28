@@ -1,7 +1,7 @@
 package com.gmail.vishchak.denis.recipesharing.service;
 
-import com.gmail.vishchak.denis.recipesharing.DTO.UserAuthDTO;
-import com.gmail.vishchak.denis.recipesharing.DTO.UserDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.UserAuthDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.UserDTO;
 import com.gmail.vishchak.denis.recipesharing.model.enums.UserRole;
 
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.gmail.vishchak.denis.recipesharing.serviceImpl;
 
-import com.gmail.vishchak.denis.recipesharing.DTO.RecipeDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
 import com.gmail.vishchak.denis.recipesharing.exception.NotFoundException;
 import com.gmail.vishchak.denis.recipesharing.model.*;
 import com.gmail.vishchak.denis.recipesharing.model.enums.Difficulty;
