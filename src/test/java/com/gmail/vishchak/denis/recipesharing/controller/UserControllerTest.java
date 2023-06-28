@@ -3,12 +3,14 @@ package com.gmail.vishchak.denis.recipesharing.controller;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.UserAuthDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.UserDTO;
 import com.gmail.vishchak.denis.recipesharing.exception.BadRequestException;
 import com.gmail.vishchak.denis.recipesharing.exception.NotFoundException;
 import com.gmail.vishchak.denis.recipesharing.model.User;
 import com.gmail.vishchak.denis.recipesharing.model.enums.UserRole;
+import com.gmail.vishchak.denis.recipesharing.serviceImpl.RecipeServiceImpl;
 import com.gmail.vishchak.denis.recipesharing.serviceImpl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,11 +20,15 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Collections;
+import java.util.List;
+
 
 class UserControllerTest {
     @Mock
     private UserServiceImpl userService;
-
+    @Mock
+    private RecipeServiceImpl recipeService;
     @InjectMocks
     private UserController userController;
 
@@ -105,5 +111,47 @@ class UserControllerTest {
         assertThrows(NotFoundException.class, () -> userService.getUserById(userId));
     }
 
+    @Test
+    void testGetUserSubmittedRecipes_Success() {
+        // Mock user ID
+        Long userId = 1L;
+
+        // Mock recipe data
+        RecipeDTO recipe = new RecipeDTO();
+        recipe.setId(1L);
+        List<RecipeDTO> recipes = Collections.singletonList(recipe);
+
+        // Mock service behavior
+        when(recipeService.getUserSubmittedRecipes(userId)).thenReturn(recipes);
+
+        // Invoke the endpoint
+        ResponseEntity<?> response = userController.getUserSubmittedRecipes(userId);
+
+        // Verify the service method invocation
+        verify(recipeService, times(1)).getUserSubmittedRecipes(userId);
+
+        // Assert the response status code and body
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(recipes, response.getBody());
+    }
+
+    @Test
+    void testGetUserSubmittedRecipes_UserNotFound() {
+        // Mock user ID
+        Long userId = 1L;
+
+        // Mock service behavior
+        when(recipeService.getUserSubmittedRecipes(userId)).thenThrow(NotFoundException.class);
+
+        // Invoke the endpoint
+        ResponseEntity<?> response = userController.getUserSubmittedRecipes(userId);
+
+        // Verify the service method invocation
+        verify(recipeService, times(1)).getUserSubmittedRecipes(userId);
+
+        // Assert the response status code
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
 }
+
 
