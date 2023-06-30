@@ -1,6 +1,7 @@
 package com.gmail.vishchak.denis.recipesharing.service;
 
-import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeCreateDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
 import com.gmail.vishchak.denis.recipesharing.model.Category;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
 
@@ -8,19 +9,19 @@ import java.util.List;
 import java.util.Map;
 
 public interface RecipeService {
-    List<RecipeDTO> getRecipesByTitle(String title);
+    List<RecipeThumbnailDTO> getRecipesByTitle(String title);
 
-    List<RecipeDTO> getRecipesByMaxCookingTime(int maxCookingTime);
+    List<RecipeThumbnailDTO> getRecipesByMaxCookingTime(int maxCookingTime);
 
-    List<RecipeDTO> getRecipesByCategories(List<Category> categories);
+    List<RecipeThumbnailDTO> getRecipesByCategories(List<Category> categories);
 
-    List<RecipeDTO> getRecipesByIngredient(Long ingredientID);
+    List<RecipeThumbnailDTO> getRecipesByIngredient(Long ingredientID);
 
-    List<RecipeDTO> getTopRatedRecipes(int limit);
+    List<RecipeThumbnailDTO> getTopRatedRecipes(int limit);
 
     Recipe getRecipeById(Long recipeId);
 
-    Recipe createRecipe(Recipe recipe);
+    Recipe createRecipe(RecipeCreateDTO recipeCreateDTO);
 
     Recipe updateRecipe(Long recipeId, Map<String, Object> fields);
 
@@ -28,9 +29,9 @@ public interface RecipeService {
 
     void rateRecipe(Long recipeId, Long userId, int rating);
 
-    List<RecipeDTO> getUserFavoriteRecipes(Long userId);
+    List<RecipeThumbnailDTO> getUserFavoriteRecipes(Long userId);
 
-    List<RecipeDTO> getUserSubmittedRecipes(Long userId);
+    List<RecipeThumbnailDTO> getUserSubmittedRecipes(Long userId);
 
-    List<RecipeDTO> getAllRecipes(int limit);
+    List<RecipeThumbnailDTO> getAllRecipes(int limit);
 }

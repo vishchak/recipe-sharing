@@ -1,13 +1,14 @@
 package com.gmail.vishchak.denis.recipesharing.controller;
 
-import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeCreateDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
+import com.gmail.vishchak.denis.recipesharing.model.Recipe;
 import com.gmail.vishchak.denis.recipesharing.service.RecipeService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,9 +22,9 @@ public class RecipeController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<RecipeDTO>> getAllRecipes(@RequestParam(defaultValue = "10") int limit) {
+    public ResponseEntity<List<RecipeThumbnailDTO>> getAllRecipes(@RequestParam(defaultValue = "10") int limit) {
         try {
-            List<RecipeDTO> recipes = recipeService.getAllRecipes(limit);
+            List<RecipeThumbnailDTO> recipes = recipeService.getAllRecipes(limit);
             if (recipes.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
             } else {
@@ -32,5 +33,16 @@ public class RecipeController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<?> createRecipe(@Valid @RequestBody RecipeCreateDTO recipeCreateDTO, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            // Return validation error response
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request data");
+        }
+
+        Recipe createdRecipe = recipeService.createRecipe(recipeCreateDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdRecipe);
     }
 }

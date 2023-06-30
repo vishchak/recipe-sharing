@@ -8,10 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecipeDTO {
+public class RecipeThumbnailDTO {
     private Long id;
     private String title;
-    private String description;
     private String image;
     private Integer cookingTime;
     private Double rating;

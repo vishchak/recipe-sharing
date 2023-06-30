@@ -1,6 +1,7 @@
 package com.gmail.vishchak.denis.recipesharing.serviceImpl;
 
-import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeCreateDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
 import com.gmail.vishchak.denis.recipesharing.exception.NotFoundException;
 import com.gmail.vishchak.denis.recipesharing.model.*;
 import com.gmail.vishchak.denis.recipesharing.model.enums.Difficulty;
@@ -31,21 +32,21 @@ public class RecipeServiceImpl implements RecipeService {
         this.ratingRepository = ratingRepository;
     }
 
-    private List<RecipeDTO> mapRecipeListToDTO(List<Recipe> recipes) {
+    private List<RecipeThumbnailDTO> mapRecipeListToDTO(List<Recipe> recipes) {
         return recipes.stream()
                 .map(this::mapRecipeToDTO)
                 .collect(Collectors.toList());
     }
 
-    private RecipeDTO mapRecipeToDTO(Recipe recipe) {
+    private RecipeThumbnailDTO mapRecipeToDTO(Recipe recipe) {
         ModelMapper modelMapper = new ModelMapper();
-        RecipeDTO recipeDTO = modelMapper.map(recipe, RecipeDTO.class);
+        RecipeThumbnailDTO recipeThumbnailDTO = modelMapper.map(recipe, RecipeThumbnailDTO.class);
 
         double averageRating = calculateAverageRating(recipe.getRatings());
 
-        recipeDTO.setRating(averageRating);
+        recipeThumbnailDTO.setRating(averageRating);
 
-        return recipeDTO;
+        return recipeThumbnailDTO;
     }
 
     private double calculateAverageRating(List<Rating> ratings) {
@@ -57,7 +58,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RecipeDTO> getRecipesByTitle(String title) {
+    public List<RecipeThumbnailDTO> getRecipesByTitle(String title) {
         List<Recipe> recipes = recipeRepository.findByTitleContainingIgnoreCase(title);
 
         return mapRecipeListToDTO(recipes);
@@ -65,7 +66,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RecipeDTO> getRecipesByMaxCookingTime(int maxCookingTime) {
+    public List<RecipeThumbnailDTO> getRecipesByMaxCookingTime(int maxCookingTime) {
         List<Recipe> recipes = recipeRepository.findByCookingTimeLessThanEqual(maxCookingTime);
 
         return mapRecipeListToDTO(recipes);
@@ -73,7 +74,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RecipeDTO> getRecipesByCategories(List<Category> categories) {
+    public List<RecipeThumbnailDTO> getRecipesByCategories(List<Category> categories) {
         List<Recipe> recipes = recipeRepository.findByCategories(categories);
 
         return mapRecipeListToDTO(recipes);
@@ -81,7 +82,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RecipeDTO> getRecipesByIngredient(Long ingredientId) {
+    public List<RecipeThumbnailDTO> getRecipesByIngredient(Long ingredientId) {
         return ingredientRepository.findById(ingredientId)
                 .map(Ingredient::getRecipes)
                 .map(this::mapRecipeListToDTO)
@@ -90,7 +91,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RecipeDTO> getTopRatedRecipes(int limit) {
+    public List<RecipeThumbnailDTO> getTopRatedRecipes(int limit) {
         List<Recipe> topRatedRecipes = recipeRepository.findTopRatedRecipesWithRatingGreaterThan(5, PageRequest.of(0, limit));
         return mapRecipeListToDTO(topRatedRecipes);
     }
@@ -104,7 +105,19 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     @Transactional
-    public Recipe createRecipe(Recipe recipe) {
+    public Recipe createRecipe(RecipeCreateDTO recipeCreateDTO) {
+        Recipe recipe = new Recipe(
+                recipeCreateDTO.getTitle(),
+                recipeCreateDTO.getDescription(),
+                recipeCreateDTO.getImage(),
+                recipeCreateDTO.getCookingTime(),
+                new Date(),
+                recipeCreateDTO.getDifficulty(),
+                recipeCreateDTO.getNutrition(),
+                recipeCreateDTO.getUser(),
+                recipeCreateDTO.getCategories(),
+                recipeCreateDTO.getIngredients());
+
         return recipeRepository.save(recipe);
     }
 
@@ -161,7 +174,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RecipeDTO> getUserFavoriteRecipes(Long userId) {
+    public List<RecipeThumbnailDTO> getUserFavoriteRecipes(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
         return mapRecipeListToDTO(user.getFavorites());
@@ -169,14 +182,14 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RecipeDTO> getUserSubmittedRecipes(Long userId) {
+    public List<RecipeThumbnailDTO> getUserSubmittedRecipes(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
         return mapRecipeListToDTO(user.getRecipes());
     }
 
     @Override
-    public List<RecipeDTO> getAllRecipes(int limit) {
+    public List<RecipeThumbnailDTO> getAllRecipes(int limit) {
         List<Recipe> recipes = recipeRepository.findAll(PageRequest.of(0, limit)).getContent();
 
         return mapRecipeListToDTO(recipes);

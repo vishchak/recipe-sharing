@@ -1,6 +1,6 @@
 package com.gmail.vishchak.denis.recipesharing.controller;
 
-import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.UserAuthDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.UserDTO;
 import com.gmail.vishchak.denis.recipesharing.exception.BadRequestException;
@@ -47,9 +47,9 @@ public class UserController {
     }
 
     @GetMapping("/users/{userId}/recipes/submitted")
-    public ResponseEntity<List<RecipeDTO>> getUserSubmittedRecipes(@PathVariable Long userId) {
+    public ResponseEntity<List<RecipeThumbnailDTO>> getUserSubmittedRecipes(@PathVariable Long userId) {
         try {
-            List<RecipeDTO> userRecipes = recipeService.getUserSubmittedRecipes(userId);
+            List<RecipeThumbnailDTO> userRecipes = recipeService.getUserSubmittedRecipes(userId);
             return ResponseEntity.ok(userRecipes);
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

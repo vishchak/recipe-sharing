@@ -3,7 +3,7 @@ package com.gmail.vishchak.denis.recipesharing.controller;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.UserAuthDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.UserDTO;
 import com.gmail.vishchak.denis.recipesharing.exception.BadRequestException;
@@ -117,9 +117,9 @@ class UserControllerTest {
         Long userId = 1L;
 
         // Mock recipe data
-        RecipeDTO recipe = new RecipeDTO();
+        RecipeThumbnailDTO recipe = new RecipeThumbnailDTO();
         recipe.setId(1L);
-        List<RecipeDTO> recipes = Collections.singletonList(recipe);
+        List<RecipeThumbnailDTO> recipes = Collections.singletonList(recipe);
 
         // Mock service behavior
         when(recipeService.getUserSubmittedRecipes(userId)).thenReturn(recipes);
