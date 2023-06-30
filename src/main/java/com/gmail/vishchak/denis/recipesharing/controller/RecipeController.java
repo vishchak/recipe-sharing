@@ -1,7 +1,9 @@
 package com.gmail.vishchak.denis.recipesharing.controller;
 
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeCreateDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
+import com.gmail.vishchak.denis.recipesharing.exception.NotFoundException;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
 import com.gmail.vishchak.denis.recipesharing.service.RecipeService;
 import jakarta.validation.Valid;
@@ -45,4 +47,15 @@ public class RecipeController {
         Recipe createdRecipe = recipeService.createRecipe(recipeCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRecipe);
     }
+
+    @GetMapping("/{recipeId}")
+    public ResponseEntity<?> getRecipeById(@PathVariable Long recipeId) {
+        try {
+            RecipeDTO recipe = recipeService.getRecipeById(recipeId);
+            return ResponseEntity.ok(recipe);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
 }

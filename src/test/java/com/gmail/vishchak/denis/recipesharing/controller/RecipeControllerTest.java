@@ -3,7 +3,9 @@ package com.gmail.vishchak.denis.recipesharing.controller;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeCreateDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
+import com.gmail.vishchak.denis.recipesharing.exception.NotFoundException;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
 import com.gmail.vishchak.denis.recipesharing.service.RecipeService;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,6 +106,36 @@ class RecipeControllerTest {
         assertEquals("Invalid request data", response.getBody());
     }
 
+    @Test
+    public void testGetRecipeById_Success() {
+        // Arrange
+        Long recipeId = 1L;
+        RecipeDTO expectedRecipe = new RecipeDTO();
+        expectedRecipe.setId(recipeId);
+        Mockito.when(recipeService.getRecipeById(recipeId)).thenReturn(expectedRecipe);
+
+        // Act
+        ResponseEntity<?> response = recipeController.getRecipeById(recipeId);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+       assertEquals(expectedRecipe, response.getBody());
+    }
+
+    @Test
+    public void testGetRecipeById_NotFound() {
+        // Arrange
+        Long recipeId = 1L;
+        Mockito.when(recipeService.getRecipeById(recipeId)).thenThrow(new NotFoundException("Recipe not found"));
+
+        // Act
+        ResponseEntity<?> response = recipeController.getRecipeById(recipeId);
+
+        // Assert
+       assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+       assertEquals("Recipe not found", response.getBody());
+    }
 }
+
 
 

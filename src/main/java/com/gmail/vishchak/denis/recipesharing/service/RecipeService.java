@@ -1,6 +1,7 @@
 package com.gmail.vishchak.denis.recipesharing.service;
 
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeCreateDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
 import com.gmail.vishchak.denis.recipesharing.model.Category;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
@@ -19,7 +20,7 @@ public interface RecipeService {
 
     List<RecipeThumbnailDTO> getTopRatedRecipes(int limit);
 
-    Recipe getRecipeById(Long recipeId);
+    RecipeDTO getRecipeById(Long recipeId);
 
     Recipe createRecipe(RecipeCreateDTO recipeCreateDTO);
 
