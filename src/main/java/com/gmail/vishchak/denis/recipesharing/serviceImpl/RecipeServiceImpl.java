@@ -174,4 +174,11 @@ public class RecipeServiceImpl implements RecipeService {
 
         return mapRecipeListToDTO(user.getRecipes());
     }
+
+    @Override
+    public List<RecipeDTO> getAllRecipes(int limit) {
+        List<Recipe> recipes = recipeRepository.findAll(PageRequest.of(0, limit)).getContent();
+
+        return mapRecipeListToDTO(recipes);
+    }
 }

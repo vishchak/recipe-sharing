@@ -31,4 +31,6 @@ public interface RecipeService {
     List<RecipeDTO> getUserFavoriteRecipes(Long userId);
 
     List<RecipeDTO> getUserSubmittedRecipes(Long userId);
+
+    List<RecipeDTO> getAllRecipes(int limit);
 }
