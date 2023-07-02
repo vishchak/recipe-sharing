@@ -10,6 +10,7 @@ import com.gmail.vishchak.denis.recipesharing.repository.RecipeRepository;
 import com.gmail.vishchak.denis.recipesharing.repository.UserRepository;
 import com.gmail.vishchak.denis.recipesharing.service.CommentService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -23,7 +24,8 @@ public class CommentServiceImpl implements CommentService {
         this.recipeRepository = recipeRepository;
         this.userRepository = userRepository;
     }
-
+    @Override
+    @Transactional
     public Comment saveComment(CommentAddDTO commentAddDTO) {
         // Retrieve the recipe
         Recipe recipe = recipeRepository.findById(commentAddDTO.getRecipeId())
