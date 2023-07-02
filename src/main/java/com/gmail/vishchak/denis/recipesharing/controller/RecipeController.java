@@ -51,11 +51,21 @@ public class RecipeController {
     @GetMapping("/{recipeId}")
     public ResponseEntity<?> getRecipeById(@PathVariable Long recipeId) {
         try {
-            RecipeDTO recipe = recipeService.getRecipeById(recipeId);
+            RecipeDTO recipe = recipeService.getRecipeDtoById(recipeId);
             return ResponseEntity.ok(recipe);
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-
+    @PostMapping("/{recipeId}/rate")
+    public ResponseEntity<?> addRatingToRecipe(@PathVariable Long recipeId, @RequestParam Long userId, @RequestParam int rating) {
+        try {
+            // Add the rating to the recipe
+            recipeService.rateRecipe(recipeId, userId, rating);
+            // Return a success response
+            return ResponseEntity.ok("Rating added successfully");
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No recipe found");
+        }
+    }
 }

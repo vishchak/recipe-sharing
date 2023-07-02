@@ -107,12 +107,13 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     @Transactional(readOnly = true)
-    public RecipeDTO getRecipeById(Long recipeId) {
+    public RecipeDTO getRecipeDtoById(Long recipeId) {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new NotFoundException("Recipe not found"));
 
         return mapRecipeToDTO(recipe, RecipeDTO.class);
     }
+
 
     @Override
     @Transactional

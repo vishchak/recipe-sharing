@@ -20,7 +20,7 @@ public interface RecipeService {
 
     List<RecipeThumbnailDTO> getTopRatedRecipes(int limit);
 
-    RecipeDTO getRecipeById(Long recipeId);
+    RecipeDTO getRecipeDtoById(Long recipeId);
 
     Recipe createRecipe(RecipeCreateDTO recipeCreateDTO);
 

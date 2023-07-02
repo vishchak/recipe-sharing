@@ -1,6 +1,9 @@
 package com.gmail.vishchak.denis.recipesharing.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeCreateDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
@@ -112,7 +115,7 @@ class RecipeControllerTest {
         Long recipeId = 1L;
         RecipeDTO expectedRecipe = new RecipeDTO();
         expectedRecipe.setId(recipeId);
-        Mockito.when(recipeService.getRecipeById(recipeId)).thenReturn(expectedRecipe);
+        Mockito.when(recipeService.getRecipeDtoById(recipeId)).thenReturn(expectedRecipe);
 
         // Act
         ResponseEntity<?> response = recipeController.getRecipeById(recipeId);
@@ -126,7 +129,7 @@ class RecipeControllerTest {
     public void testGetRecipeById_NotFound() {
         // Arrange
         Long recipeId = 1L;
-        Mockito.when(recipeService.getRecipeById(recipeId)).thenThrow(new NotFoundException("Recipe not found"));
+        Mockito.when(recipeService.getRecipeDtoById(recipeId)).thenThrow(new NotFoundException("Recipe not found"));
 
         // Act
         ResponseEntity<?> response = recipeController.getRecipeById(recipeId);
@@ -134,6 +137,39 @@ class RecipeControllerTest {
         // Assert
        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
        assertEquals("Recipe not found", response.getBody());
+    }
+
+    @Test
+    void addRatingToRecipe_Success() {
+        // Arrange
+        Long recipeId = 1L;
+        Long userId = 2L;
+        int rating = 4;
+
+        // Act
+        ResponseEntity<?> response = recipeController.addRatingToRecipe(recipeId, userId, rating);
+
+        // Assert
+        verify(recipeService).rateRecipe(eq(recipeId), eq(userId), eq(rating));
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Rating added successfully", response.getBody());
+    }
+
+    @Test
+    void addRatingToRecipe_NotFound() {
+        // Arrange
+        Long recipeId = 1L;
+        Long userId = 2L;
+        int rating = 4;
+        doThrow(NotFoundException.class).when(recipeService).rateRecipe(anyLong(), anyLong(), anyInt());
+
+        // Act
+        ResponseEntity<?> response = recipeController.addRatingToRecipe(recipeId, userId, rating);
+
+        // Assert
+        verify(recipeService).rateRecipe(eq(recipeId), eq(userId), eq(rating));
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("No recipe found", response.getBody());
     }
 }
 
