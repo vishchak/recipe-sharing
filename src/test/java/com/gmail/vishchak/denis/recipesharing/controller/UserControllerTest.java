@@ -93,11 +93,11 @@ class UserControllerTest {
 
         UserDTO userProfile = new UserDTO(user.getId(),user.getUsername(),user.getEmail(),user.getImage(), user.getRole());
 
-        when(userService.getUserById(anyLong())).thenReturn(userProfile);
+        when(userService.getUserDtoById(anyLong())).thenReturn(userProfile);
 
         ResponseEntity<?> response = userController.getUserProfile(user.getId());
 
-        verify(userService, times(1)).getUserById(eq(user.getId()));
+        verify(userService, times(1)).getUserDtoById(eq(user.getId()));
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(userProfile, response.getBody());
@@ -106,9 +106,9 @@ class UserControllerTest {
     @Test
     public void testGetUserProfile_UserNotFound() {
         long userId = 1L;
-        when(userService.getUserById(userId)).thenThrow(NotFoundException.class);
+        when(userService.getUserDtoById(userId)).thenThrow(NotFoundException.class);
 
-        assertThrows(NotFoundException.class, () -> userService.getUserById(userId));
+        assertThrows(NotFoundException.class, () -> userService.getUserDtoById(userId));
     }
 
     @Test

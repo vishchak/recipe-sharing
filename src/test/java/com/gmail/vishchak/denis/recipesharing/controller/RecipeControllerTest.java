@@ -2,14 +2,16 @@ package com.gmail.vishchak.denis.recipesharing.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
+import com.gmail.vishchak.denis.recipesharing.dto.CommentAddDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeCreateDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
 import com.gmail.vishchak.denis.recipesharing.exception.NotFoundException;
+import com.gmail.vishchak.denis.recipesharing.model.Comment;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
+import com.gmail.vishchak.denis.recipesharing.service.CommentService;
 import com.gmail.vishchak.denis.recipesharing.service.RecipeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +29,8 @@ import java.util.List;
 class RecipeControllerTest {
     @Mock
     private RecipeService recipeService;
-
+    @Mock
+    private CommentService commentService;
     @InjectMocks
     private RecipeController recipeController;
 
@@ -42,7 +45,7 @@ class RecipeControllerTest {
         List<RecipeThumbnailDTO> recipes = new ArrayList<>();
         recipes.add(new RecipeThumbnailDTO(/* recipe data */));
         recipes.add(new RecipeThumbnailDTO(/* recipe data */));
-        Mockito.when(recipeService.getAllRecipes(limit)).thenReturn(recipes);
+        when(recipeService.getAllRecipes(limit)).thenReturn(recipes);
 
         ResponseEntity<List<RecipeThumbnailDTO>> response = recipeController.getAllRecipes(limit);
 
@@ -54,7 +57,7 @@ class RecipeControllerTest {
     public void testGetAllRecipes_NoContent() {
         int limit = 10;
         List<RecipeThumbnailDTO> recipes = new ArrayList<>();
-        Mockito.when(recipeService.getAllRecipes(limit)).thenReturn(recipes);
+        when(recipeService.getAllRecipes(limit)).thenReturn(recipes);
 
         ResponseEntity<List<RecipeThumbnailDTO>> response = recipeController.getAllRecipes(limit);
 
@@ -65,7 +68,7 @@ class RecipeControllerTest {
     @Test
     public void testGetAllRecipes_InternalServerError() {
         int limit = 10;
-        Mockito.when(recipeService.getAllRecipes(limit)).thenThrow(new RuntimeException("Internal server error"));
+        when(recipeService.getAllRecipes(limit)).thenThrow(new RuntimeException("Internal server error"));
 
         ResponseEntity<List<RecipeThumbnailDTO>> response = recipeController.getAllRecipes(limit);
 
@@ -80,12 +83,12 @@ class RecipeControllerTest {
         // Set the necessary fields for creating a recipe
 
         BindingResult bindingResult = Mockito.mock(BindingResult.class);
-        Mockito.when(bindingResult.hasErrors()).thenReturn(false);
+        when(bindingResult.hasErrors()).thenReturn(false);
 
         Recipe createdRecipe = new Recipe();
         // Set the necessary fields for the created recipe
 
-        Mockito.when(recipeService.createRecipe(recipeCreateDTO)).thenReturn(createdRecipe);
+        when(recipeService.createRecipe(recipeCreateDTO)).thenReturn(createdRecipe);
 
         ResponseEntity<?> response = recipeController.createRecipe(recipeCreateDTO, bindingResult);
 
@@ -101,7 +104,7 @@ class RecipeControllerTest {
         // Set the necessary fields for creating a recipe
 
         BindingResult bindingResult = Mockito.mock(BindingResult.class);
-        Mockito.when(bindingResult.hasErrors()).thenReturn(true);
+        when(bindingResult.hasErrors()).thenReturn(true);
 
         ResponseEntity<?> response = recipeController.createRecipe(recipeCreateDTO, bindingResult);
 
@@ -115,28 +118,28 @@ class RecipeControllerTest {
         Long recipeId = 1L;
         RecipeDTO expectedRecipe = new RecipeDTO();
         expectedRecipe.setId(recipeId);
-        Mockito.when(recipeService.getRecipeDtoById(recipeId)).thenReturn(expectedRecipe);
+        when(recipeService.getRecipeDtoById(recipeId)).thenReturn(expectedRecipe);
 
         // Act
         ResponseEntity<?> response = recipeController.getRecipeById(recipeId);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-       assertEquals(expectedRecipe, response.getBody());
+        assertEquals(expectedRecipe, response.getBody());
     }
 
     @Test
     public void testGetRecipeById_NotFound() {
         // Arrange
         Long recipeId = 1L;
-        Mockito.when(recipeService.getRecipeDtoById(recipeId)).thenThrow(new NotFoundException("Recipe not found"));
+        when(recipeService.getRecipeDtoById(recipeId)).thenThrow(new NotFoundException("Recipe not found"));
 
         // Act
         ResponseEntity<?> response = recipeController.getRecipeById(recipeId);
 
         // Assert
-       assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-       assertEquals("Recipe not found", response.getBody());
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Recipe not found", response.getBody());
     }
 
     @Test
@@ -170,6 +173,46 @@ class RecipeControllerTest {
         verify(recipeService).rateRecipe(eq(recipeId), eq(userId), eq(rating));
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals("No recipe found", response.getBody());
+    }
+
+    @Test
+    void testAddCommentToRecipe_Success() {
+        // Arrange
+        Long recipeId = 1L;
+        CommentAddDTO commentDTO = new CommentAddDTO();
+        commentDTO.setContent("Great recipe!");
+
+        Comment savedComment = new Comment();
+        savedComment.setId(1L);
+        savedComment.setContent(commentDTO.getContent());
+
+        when(commentService.saveComment(any(CommentAddDTO.class))).thenReturn(savedComment);
+
+        // Act
+        ResponseEntity<?> response = recipeController.addCommentToRecipe(recipeId, commentDTO);
+
+        // Assert
+        verify(commentService, times(1)).saveComment(any(CommentAddDTO.class));
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(savedComment, response.getBody());
+    }
+
+    @Test
+    void testAddCommentToRecipe_NotFound() {
+        // Arrange
+        Long recipeId = 1L;
+        CommentAddDTO commentDTO = new CommentAddDTO();
+        commentDTO.setContent("Great recipe!");
+
+        when(commentService.saveComment(any(CommentAddDTO.class))).thenThrow(new NotFoundException("Recipe not found"));
+
+        // Act
+        ResponseEntity<?> response = recipeController.addCommentToRecipe(recipeId, commentDTO);
+
+        // Assert
+        verify(commentService, times(1)).saveComment(any(CommentAddDTO.class));
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Recipe not found", response.getBody());
     }
 }
 

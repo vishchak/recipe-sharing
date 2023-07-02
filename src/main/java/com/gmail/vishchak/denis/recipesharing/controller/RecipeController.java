@@ -1,10 +1,13 @@
 package com.gmail.vishchak.denis.recipesharing.controller;
 
+import com.gmail.vishchak.denis.recipesharing.dto.CommentAddDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeCreateDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
 import com.gmail.vishchak.denis.recipesharing.exception.NotFoundException;
+import com.gmail.vishchak.denis.recipesharing.model.Comment;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
+import com.gmail.vishchak.denis.recipesharing.service.CommentService;
 import com.gmail.vishchak.denis.recipesharing.service.RecipeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,9 +21,11 @@ import java.util.List;
 @RequestMapping("/recipes")
 public class RecipeController {
     private final RecipeService recipeService;
+    private final CommentService commentService;
 
-    public RecipeController(RecipeService recipeService) {
+    public RecipeController(RecipeService recipeService, CommentService commentService) {
         this.recipeService = recipeService;
+        this.commentService = commentService;
     }
 
     @GetMapping("/all")
@@ -57,6 +62,7 @@ public class RecipeController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
     @PostMapping("/{recipeId}/rate")
     public ResponseEntity<?> addRatingToRecipe(@PathVariable Long recipeId, @RequestParam Long userId, @RequestParam int rating) {
         try {
@@ -68,4 +74,20 @@ public class RecipeController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No recipe found");
         }
     }
+
+    @PostMapping("/{recipeId}/comments")
+    public ResponseEntity<?> addCommentToRecipe(@PathVariable Long recipeId, @RequestBody CommentAddDTO commentAddDTO) {
+        try {
+            // Save the comment
+            commentAddDTO.setRecipeId(recipeId);
+            Comment comment = commentService.saveComment(commentAddDTO);
+
+            // Return a success response with the saved comment
+            return ResponseEntity.ok(comment);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+
 }

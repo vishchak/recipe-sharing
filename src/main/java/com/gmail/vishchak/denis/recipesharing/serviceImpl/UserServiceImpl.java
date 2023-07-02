@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserDTO getUserById(Long userId) {
+    public UserDTO getUserDtoById(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 

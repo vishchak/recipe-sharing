@@ -5,8 +5,8 @@ import com.gmail.vishchak.denis.recipesharing.dto.UserAuthDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.UserDTO;
 import com.gmail.vishchak.denis.recipesharing.exception.BadRequestException;
 import com.gmail.vishchak.denis.recipesharing.exception.NotFoundException;
+import com.gmail.vishchak.denis.recipesharing.service.RecipeService;
 import com.gmail.vishchak.denis.recipesharing.service.UserService;
-import com.gmail.vishchak.denis.recipesharing.serviceImpl.RecipeServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,9 +18,9 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final RecipeServiceImpl recipeService;
+    private final RecipeService recipeService;
 
-    public UserController(UserService userService, RecipeServiceImpl recipeService) {
+    public UserController(UserService userService, RecipeService recipeService) {
         this.userService = userService;
         this.recipeService = recipeService;
     }
@@ -39,7 +39,7 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<UserDTO> getUserProfile(@PathVariable Long userId) {
         try {
-            UserDTO userProfile = userService.getUserById(userId);
+            UserDTO userProfile = userService.getUserDtoById(userId);
             return ResponseEntity.status(HttpStatus.OK).body(userProfile);
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
