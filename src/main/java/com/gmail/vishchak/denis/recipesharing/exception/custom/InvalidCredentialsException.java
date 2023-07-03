@@ -1,4 +1,4 @@
-package com.gmail.vishchak.denis.recipesharing.exception;
+package com.gmail.vishchak.denis.recipesharing.exception.custom;
 
 public class InvalidCredentialsException extends RuntimeException {
     public InvalidCredentialsException(String message) {

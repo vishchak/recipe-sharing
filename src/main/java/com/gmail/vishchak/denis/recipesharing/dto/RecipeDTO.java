@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -24,7 +23,7 @@ public class RecipeDTO {
     private Difficulty difficulty;
     private User user;
     private Nutrition nutrition;
-    private Set<Category> categories;
+    private List<Category> categories;
     private List<Ingredient> ingredients;
     private List<Comment> comments;
 }

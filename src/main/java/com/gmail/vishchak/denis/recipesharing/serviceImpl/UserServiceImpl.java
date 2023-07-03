@@ -2,9 +2,10 @@ package com.gmail.vishchak.denis.recipesharing.serviceImpl;
 
 import com.gmail.vishchak.denis.recipesharing.dto.UserAuthDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.UserDTO;
-import com.gmail.vishchak.denis.recipesharing.exception.BadRequestException;
-import com.gmail.vishchak.denis.recipesharing.exception.InvalidCredentialsException;
-import com.gmail.vishchak.denis.recipesharing.exception.NotFoundException;
+import com.gmail.vishchak.denis.recipesharing.exception.custom.BadRequestException;
+import com.gmail.vishchak.denis.recipesharing.exception.custom.InvalidCredentialsException;
+import com.gmail.vishchak.denis.recipesharing.exception.custom.NoContentException;
+import com.gmail.vishchak.denis.recipesharing.exception.custom.NotFoundException;
 import com.gmail.vishchak.denis.recipesharing.model.User;
 import com.gmail.vishchak.denis.recipesharing.model.enums.UserRole;
 import com.gmail.vishchak.denis.recipesharing.repository.UserRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -96,9 +98,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("User not found");
-        }
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
         userRepository.deleteById(userId);
     }
@@ -123,9 +124,13 @@ public class UserServiceImpl implements UserService {
     public List<UserDTO> getAllUsers() {
         List<User> users = userRepository.findAll();
 
-        return users.stream()
-                .map(user -> modelMapper.map(user, UserDTO.class))
-                .collect(Collectors.toList());
+        return Optional.of(users)
+                .filter(list -> !list.isEmpty())
+                .map(list -> list.stream()
+                        .map(user -> modelMapper.map(user, UserDTO.class))
+                        .collect(Collectors.toList())
+                )
+                .orElseThrow(() -> new NoContentException("No users found"));
     }
 
     @Override
@@ -133,8 +138,12 @@ public class UserServiceImpl implements UserService {
     public List<UserDTO> getUsersByRole(UserRole role) {
         List<User> users = userRepository.findAllByRole(role);
 
-        return users.stream()
-                .map(user -> modelMapper.map(user, UserDTO.class))
-                .collect(Collectors.toList());
+        return Optional.of(users)
+                .filter(list -> !list.isEmpty())
+                .map(list -> list.stream()
+                        .map(user -> modelMapper.map(user, UserDTO.class))
+                        .collect(Collectors.toList())
+                )
+                .orElseThrow(() -> new NoContentException("No users found for the specified role"));
     }
 }

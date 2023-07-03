@@ -3,17 +3,17 @@ package com.gmail.vishchak.denis.recipesharing.serviceImpl;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeCreateDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
-import com.gmail.vishchak.denis.recipesharing.exception.NotFoundException;
+import com.gmail.vishchak.denis.recipesharing.exception.custom.BadRequestException;
+import com.gmail.vishchak.denis.recipesharing.exception.custom.NoContentException;
+import com.gmail.vishchak.denis.recipesharing.exception.custom.NotFoundException;
 import com.gmail.vishchak.denis.recipesharing.model.*;
-import com.gmail.vishchak.denis.recipesharing.repository.IngredientRepository;
-import com.gmail.vishchak.denis.recipesharing.repository.RatingRepository;
-import com.gmail.vishchak.denis.recipesharing.repository.RecipeRepository;
-import com.gmail.vishchak.denis.recipesharing.repository.UserRepository;
+import com.gmail.vishchak.denis.recipesharing.repository.*;
 import com.gmail.vishchak.denis.recipesharing.service.RecipeService;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -26,20 +26,23 @@ public class RecipeServiceImpl implements RecipeService {
     private final IngredientRepository ingredientRepository;
     private final RatingRepository ratingRepository;
 
-    public RecipeServiceImpl(RecipeRepository recipeRepository, UserRepository userRepository, IngredientRepository ingredientRepository, RatingRepository ratingRepository) {
+    private final CategoryRepository categoryRepository;
+
+    public RecipeServiceImpl(RecipeRepository recipeRepository, UserRepository userRepository, IngredientRepository ingredientRepository, RatingRepository ratingRepository, CategoryRepository categoryRepository) {
         this.recipeRepository = recipeRepository;
         this.userRepository = userRepository;
         this.ingredientRepository = ingredientRepository;
         this.ratingRepository = ratingRepository;
+        this.categoryRepository = categoryRepository;
     }
 
-    private <T> List<T> mapRecipeListToDTO(List<Recipe> recipes, Class<T> dtoClass) {
+    private List<RecipeThumbnailDTO> mapRecipeListToDTO(List<Recipe> recipes) {
         if (recipes == null) {
             return Collections.emptyList();
         }
 
         return recipes.stream()
-                .map(recipe -> mapRecipeToDTO(recipe, dtoClass))
+                .map(recipe -> mapRecipeToDTO(recipe, RecipeThumbnailDTO.class))
                 .collect(Collectors.toList());
     }
 
@@ -58,6 +61,7 @@ public class RecipeServiceImpl implements RecipeService {
         return dto;
     }
 
+
     private double calculateAverageRating(List<Rating> ratings) {
         return ratings.stream()
                 .mapToInt(Rating::getValue)
@@ -70,7 +74,10 @@ public class RecipeServiceImpl implements RecipeService {
     public List<RecipeThumbnailDTO> getRecipesByTitle(String title) {
         List<Recipe> recipes = recipeRepository.findByTitleContainingIgnoreCase(title);
 
-        return mapRecipeListToDTO(recipes, RecipeThumbnailDTO.class);
+        return Optional.of(recipes)
+                .filter(list -> !list.isEmpty())
+                .map(this::mapRecipeListToDTO)
+                .orElseThrow(() -> new NoContentException("No recipes found"));
     }
 
     @Override
@@ -78,7 +85,10 @@ public class RecipeServiceImpl implements RecipeService {
     public List<RecipeThumbnailDTO> getRecipesByMaxCookingTime(int maxCookingTime) {
         List<Recipe> recipes = recipeRepository.findByCookingTimeLessThanEqual(maxCookingTime);
 
-        return mapRecipeListToDTO(recipes, RecipeThumbnailDTO.class);
+        return Optional.of(recipes)
+                .filter(list -> !list.isEmpty())
+                .map(this::mapRecipeListToDTO)
+                .orElseThrow(() -> new NoContentException("No recipes found"));
     }
 
     @Override
@@ -86,7 +96,10 @@ public class RecipeServiceImpl implements RecipeService {
     public List<RecipeThumbnailDTO> getRecipesByCategories(List<Category> categories) {
         List<Recipe> recipes = recipeRepository.findByCategories(categories);
 
-        return mapRecipeListToDTO(recipes, RecipeThumbnailDTO.class);
+        return Optional.of(recipes)
+                .filter(list -> !list.isEmpty())
+                .map(this::mapRecipeListToDTO)
+                .orElseThrow(() -> new NoContentException("No recipes found"));
     }
 
     @Override
@@ -94,7 +107,13 @@ public class RecipeServiceImpl implements RecipeService {
     public List<RecipeThumbnailDTO> getRecipesByIngredient(Long ingredientId) {
         return ingredientRepository.findById(ingredientId)
                 .map(Ingredient::getRecipes)
-                .map(recipes -> mapRecipeListToDTO(recipes, RecipeThumbnailDTO.class))
+                .map(recipes -> {
+                    if (!recipes.isEmpty()) {
+                        return mapRecipeListToDTO(recipes);
+                    } else {
+                        throw new NoContentException("No recipes found for the ingredient");
+                    }
+                })
                 .orElseThrow(() -> new NotFoundException("Ingredient not found"));
     }
 
@@ -102,8 +121,13 @@ public class RecipeServiceImpl implements RecipeService {
     @Transactional(readOnly = true)
     public List<RecipeThumbnailDTO> getTopRatedRecipes(int limit) {
         List<Recipe> topRatedRecipes = recipeRepository.findTopRatedRecipesWithRatingGreaterThan(5, PageRequest.of(0, limit));
-        return mapRecipeListToDTO(topRatedRecipes, RecipeThumbnailDTO.class);
+
+        return Optional.of(topRatedRecipes)
+                .filter(list -> !list.isEmpty())
+                .map(this::mapRecipeListToDTO)
+                .orElseThrow(() -> new NoContentException("No recipes found"));
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -117,11 +141,23 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     @Transactional
-    public Recipe createRecipe(RecipeCreateDTO recipeCreateDTO) {
-        if (recipeCreateDTO.getUser() == null) {
-            throw new NotFoundException("User cannot be null");
+    public Recipe createRecipe(RecipeCreateDTO recipeCreateDTO, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            throw new BadRequestException("Invalid recipe data");
         }
 
+        List<Category> categories = categoryRepository.findAllById(recipeCreateDTO.getCategoryIds());
+        List<Ingredient> ingredients = ingredientRepository.findAllById(recipeCreateDTO.getIngredientIds());
+
+        if (categories.isEmpty()) {
+            throw new NotFoundException("Categories not found");
+        }
+
+        if (ingredients.isEmpty()) {
+            throw new NotFoundException("Ingredients not found");
+        }
+
+        User user = userRepository.findById(recipeCreateDTO.getUserId()).orElseThrow(() -> new NotFoundException("User not found"));
         Recipe recipe = new Recipe(
                 recipeCreateDTO.getTitle(),
                 recipeCreateDTO.getDescription(),
@@ -130,12 +166,13 @@ public class RecipeServiceImpl implements RecipeService {
                 new Date(),
                 recipeCreateDTO.getDifficulty(),
                 recipeCreateDTO.getNutrition(),
-                recipeCreateDTO.getUser(),
-                recipeCreateDTO.getCategories(),
-                recipeCreateDTO.getIngredients());
+                user,
+                categories,
+                ingredients);
 
         return recipeRepository.save(recipe);
     }
+
 
     @Override
     @Transactional
@@ -150,7 +187,7 @@ public class RecipeServiceImpl implements RecipeService {
                     field.setAccessible(true);
                     field.set(existingRecipe, value);
                 } catch (NoSuchFieldException | IllegalAccessException e) {
-                    throw new IllegalArgumentException("Invalid field name: " + fieldName);
+                    throw new BadRequestException("Invalid field name: " + fieldName);
                 }
             }
         });
@@ -189,15 +226,24 @@ public class RecipeServiceImpl implements RecipeService {
     public List<RecipeThumbnailDTO> getUserFavoriteRecipes(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
-        return mapRecipeListToDTO(user.getFavorites(), RecipeThumbnailDTO.class);
+        return Optional.of(user.getFavorites())
+                .filter(list -> !list.isEmpty())
+                .map(this::mapRecipeListToDTO)
+                .orElseThrow(() -> new NoContentException("No recipes found"));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<RecipeThumbnailDTO> getUserSubmittedRecipes(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
-        return mapRecipeListToDTO(user.getRecipes(), RecipeThumbnailDTO.class);
+        List<Recipe> recipes = user.getRecipes();
+
+        return Optional.of(recipes)
+                .filter(list -> !list.isEmpty())
+                .map(this::mapRecipeListToDTO)
+                .orElseThrow(() -> new NoContentException("No submitted recipes found for the user"));
     }
 
     @Override
@@ -205,6 +251,9 @@ public class RecipeServiceImpl implements RecipeService {
     public List<RecipeThumbnailDTO> getAllRecipes(int limit) {
         List<Recipe> recipes = recipeRepository.findAll(PageRequest.of(0, limit)).getContent();
 
-        return mapRecipeListToDTO(recipes, RecipeThumbnailDTO.class);
+        return Optional.of(recipes)
+                .filter(list -> !list.isEmpty())
+                .map(this::mapRecipeListToDTO)
+                .orElseThrow(() -> new NoContentException("No recipes found"));
     }
 }

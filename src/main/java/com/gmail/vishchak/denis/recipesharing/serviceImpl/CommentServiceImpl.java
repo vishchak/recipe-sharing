@@ -1,7 +1,7 @@
 package com.gmail.vishchak.denis.recipesharing.serviceImpl;
 
 import com.gmail.vishchak.denis.recipesharing.dto.CommentAddDTO;
-import com.gmail.vishchak.denis.recipesharing.exception.NotFoundException;
+import com.gmail.vishchak.denis.recipesharing.exception.custom.NotFoundException;
 import com.gmail.vishchak.denis.recipesharing.model.Comment;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
 import com.gmail.vishchak.denis.recipesharing.model.User;

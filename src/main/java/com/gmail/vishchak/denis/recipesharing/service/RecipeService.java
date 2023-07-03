@@ -5,6 +5,7 @@ import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
 import com.gmail.vishchak.denis.recipesharing.model.Category;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
+import org.springframework.validation.BindingResult;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ public interface RecipeService {
 
     RecipeDTO getRecipeDtoById(Long recipeId);
 
-    Recipe createRecipe(RecipeCreateDTO recipeCreateDTO);
+    Recipe createRecipe(RecipeCreateDTO recipeCreateDTO, BindingResult bindingResult);
 
     Recipe updateRecipe(Long recipeId, Map<String, Object> fields);
 
