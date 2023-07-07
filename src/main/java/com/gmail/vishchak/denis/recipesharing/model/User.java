@@ -2,12 +2,12 @@ package com.gmail.vishchak.denis.recipesharing.model;
 
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.gmail.vishchak.denis.recipesharing.model.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,8 +28,10 @@ public class User {
 
     private String image;
 
-    @Enumerated(EnumType.STRING)
-    private UserRole role;
+@ManyToMany(fetch = FetchType.EAGER)
+private java.util.Collection<Role> roles = new ArrayList<>();
+
+
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private MealPlan mealPlan;

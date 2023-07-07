@@ -1,28 +1,23 @@
 package com.gmail.vishchak.denis.recipesharing.service;
 
-import com.gmail.vishchak.denis.recipesharing.dto.UserAuthDTO;
-import com.gmail.vishchak.denis.recipesharing.dto.UserDTO;
+import com.gmail.vishchak.denis.recipesharing.model.Role;
+import com.gmail.vishchak.denis.recipesharing.model.User;
 import com.gmail.vishchak.denis.recipesharing.model.enums.UserRole;
 
 import java.util.List;
 
 public interface UserService {
-    UserDTO registerUser(UserAuthDTO userAuthDTO);
+    User registerUser(String username, String email, String password);
 
-    UserDTO getUserDtoById(Long userId);
+    User getUserByUsername(String username);
 
-    UserDTO getUserByUsername(String username);
+    User getUserById(Long id);
 
-    UserDTO getUserByEmail(String email);
 
-    UserDTO updateUser(UserDTO userDTO);
+    List<User> getAllUsers();
 
-    void deleteUser(Long userId);
+    Role saveRole(Role role);
 
-    void changePassword(Long userId, String currentPassword, String newPassword);
-
-    List<UserDTO> getAllUsers();
-
-    List<UserDTO> getUsersByRole(UserRole role);
+    void addRoleToUser(String username, UserRole userRole);
 }
 

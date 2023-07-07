@@ -1,149 +1,102 @@
 package com.gmail.vishchak.denis.recipesharing.serviceImpl;
 
-import com.gmail.vishchak.denis.recipesharing.dto.UserAuthDTO;
-import com.gmail.vishchak.denis.recipesharing.dto.UserDTO;
+
 import com.gmail.vishchak.denis.recipesharing.exception.custom.BadRequestException;
-import com.gmail.vishchak.denis.recipesharing.exception.custom.InvalidCredentialsException;
 import com.gmail.vishchak.denis.recipesharing.exception.custom.NoContentException;
 import com.gmail.vishchak.denis.recipesharing.exception.custom.NotFoundException;
+import com.gmail.vishchak.denis.recipesharing.model.Role;
 import com.gmail.vishchak.denis.recipesharing.model.User;
 import com.gmail.vishchak.denis.recipesharing.model.enums.UserRole;
+import com.gmail.vishchak.denis.recipesharing.repository.RoleRepository;
 import com.gmail.vishchak.denis.recipesharing.repository.UserRepository;
 import com.gmail.vishchak.denis.recipesharing.service.UserService;
-import org.modelmapper.ModelMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
+@Transactional
+@Slf4j
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final ModelMapper modelMapper;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, ModelMapper modelMapper, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.modelMapper = modelMapper;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    @Transactional
-    public UserDTO registerUser(UserAuthDTO userAuthDTO) {
-        if (userRepository.existsByEmail(userAuthDTO.getEmail())) {
+    public User registerUser(String username, String email, String password) {
+        if (userRepository.existsByEmail(email)) {
             throw new BadRequestException("Email is already taken");
         }
 
-        if (userRepository.existsByUsername(userAuthDTO.getUsername())) {
+        if (userRepository.existsByUsername(username)) {
             throw new BadRequestException("Username is already taken");
         }
 
-        User user = modelMapper.map(userAuthDTO, User.class);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(UserRole.USER);
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
 
         User savedUser = userRepository.save(user);
 
-        return modelMapper.map(savedUser, UserDTO.class);
+        log.info("Saving new user {} to DB", user.getUsername());
+        return savedUser;
     }
 
 
     @Override
-    @Transactional(readOnly = true)
-    public UserDTO getUserDtoById(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
+    public User getUserByUsername(String username) {
+        log.info("Retrieving user {} from DB", username);
 
-        return modelMapper.map(user, UserDTO.class);
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public UserDTO getUserByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new NotFoundException("User not found"));
+    public User getUserById(Long id) {
+        log.info("Retrieving user {} from DB", id);
 
-        return modelMapper.map(user, UserDTO.class);
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public UserDTO getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("User not found"));
+    public List<User> getAllUsers() {
+        log.info("Retrieving all users");
 
-        return modelMapper.map(user, UserDTO.class);
-    }
+        List<User> userList = userRepository.findAll();
 
-    @Override
-    @Transactional
-    public UserDTO updateUser(UserDTO userDTO) {
-        User existingUser = userRepository.findById(userDTO.getId())
-                .orElseThrow(() -> new NotFoundException("User not found"));
-
-        existingUser.setUsername(userDTO.getUsername());
-        existingUser.setEmail(userDTO.getEmail());
-        existingUser.setImage(userDTO.getImage());
-        existingUser.setRole(userDTO.getRole());
-
-        User updatedUser = userRepository.save(existingUser);
-
-        return modelMapper.map(updatedUser, UserDTO.class);
-    }
-
-    @Override
-    @Transactional
-    public void deleteUser(Long userId) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
-
-        userRepository.deleteById(userId);
-    }
-
-    @Override
-    @Transactional
-    public void changePassword(Long userId, String currentPassword, String newPassword) {
-        User existingUser = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
-
-        if (!passwordEncoder.matches(currentPassword, existingUser.getPassword())) {
-            throw new InvalidCredentialsException("Incorrect current password");
+        if (userList.isEmpty()) {
+            throw new NoContentException("No users found");
         }
 
-        String encodedNewPassword = passwordEncoder.encode(newPassword);
-        existingUser.setPassword(encodedNewPassword);
-        userRepository.save(existingUser);
+        return userList;
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<UserDTO> getAllUsers() {
-        List<User> users = userRepository.findAll();
-
-        return Optional.of(users)
-                .filter(list -> !list.isEmpty())
-                .map(list -> list.stream()
-                        .map(user -> modelMapper.map(user, UserDTO.class))
-                        .collect(Collectors.toList())
-                )
-                .orElseThrow(() -> new NoContentException("No users found"));
+    public Role saveRole(Role role) {
+        log.info("Saving new role {} to DB", role.getRole());
+        return roleRepository.save(role);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<UserDTO> getUsersByRole(UserRole role) {
-        List<User> users = userRepository.findAllByRole(role);
+    public void addRoleToUser(String username, UserRole userRole) {
+        log.info("Adding role {} to user {}", userRole, username);
+        User user = userRepository.findByUsername(username).orElseThrow(()
+                -> new NotFoundException("User not found"));
+        Role role = roleRepository.findByRole(userRole);
 
-        return Optional.of(users)
-                .filter(list -> !list.isEmpty())
-                .map(list -> list.stream()
-                        .map(user -> modelMapper.map(user, UserDTO.class))
-                        .collect(Collectors.toList())
-                )
-                .orElseThrow(() -> new NoContentException("No users found for the specified role"));
+        user.getRoles().add(role);
     }
+
+
 }
