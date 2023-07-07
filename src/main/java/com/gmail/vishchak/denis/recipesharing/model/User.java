@@ -1,6 +1,7 @@
 package com.gmail.vishchak.denis.recipesharing.model;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.gmail.vishchak.denis.recipesharing.model.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -34,6 +35,7 @@ public class User {
     private MealPlan mealPlan;
 
     @OneToMany(mappedBy = "user")
+    @JsonManagedReference
     private List<Recipe> recipes;
 
     @OneToMany(mappedBy = "user")

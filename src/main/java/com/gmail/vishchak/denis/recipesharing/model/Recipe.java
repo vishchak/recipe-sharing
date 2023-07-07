@@ -1,5 +1,6 @@
 package com.gmail.vishchak.denis.recipesharing.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.gmail.vishchak.denis.recipesharing.model.enums.Difficulty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -36,6 +37,7 @@ public class Recipe {
     private Nutrition nutrition;
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonBackReference
     private User user;
 
     @ManyToMany

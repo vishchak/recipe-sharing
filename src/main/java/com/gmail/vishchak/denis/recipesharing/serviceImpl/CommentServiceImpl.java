@@ -12,6 +12,8 @@ import com.gmail.vishchak.denis.recipesharing.service.CommentService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
+
 @Service
 public class CommentServiceImpl implements CommentService {
 
@@ -26,20 +28,20 @@ public class CommentServiceImpl implements CommentService {
     }
     @Override
     @Transactional
-    public Comment saveComment(CommentAddDTO commentAddDTO) {
+    public Comment saveComment(CommentAddDTO commentAddDTO, Long recipeId) {
         // Retrieve the recipe
-        Recipe recipe = recipeRepository.findById(commentAddDTO.getRecipeId())
-                .orElseThrow(() -> new NotFoundException("Recipe not found with id: " + commentAddDTO.getRecipeId()));
+        Recipe recipe = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new NotFoundException("Recipe not found with id: " + recipeId));
 
         // Retrieve the user
-        User user = userRepository.findById(commentAddDTO.getUserId())
-                .orElseThrow(() -> new NotFoundException("User not found with id: " + commentAddDTO.getUserId()));
+        User user = userRepository.findById(commentAddDTO.userId())
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + commentAddDTO.userId()));
 
         // Create a new comment
         Comment comment = new Comment();
-        comment.setContent(commentAddDTO.getContent());
-        comment.setImage(commentAddDTO.getImage());
-        comment.setDate(commentAddDTO.getDate());
+        comment.setContent(commentAddDTO.content());
+        comment.setImage(commentAddDTO.image());
+        comment.setDate(new Date());
         comment.setRecipe(recipe);
         comment.setUser(user);
 

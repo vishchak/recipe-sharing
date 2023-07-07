@@ -50,8 +50,7 @@ public class RecipeController {
 
     @PostMapping("/{recipeId}/comment")
     public ResponseEntity<?> addCommentToRecipe(@PathVariable("recipeId") Long recipeId, @RequestBody CommentAddDTO commentAddDTO) {
-        commentAddDTO.setRecipeId(recipeId);
-        Comment comment = commentService.saveComment(commentAddDTO);
+        Comment comment = commentService.saveComment(commentAddDTO, recipeId);
         return ResponseEntity.status(HttpStatus.CREATED).body(comment);
     }
 }
