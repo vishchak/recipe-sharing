@@ -170,6 +170,8 @@ public class RecipeServiceImpl implements RecipeService {
                 categories,
                 ingredients);
 
+        recipeCreateDTO.getNutrition().setRecipe(recipe);
+
         return recipeRepository.save(recipe);
     }
 

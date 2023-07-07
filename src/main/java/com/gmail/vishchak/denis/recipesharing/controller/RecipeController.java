@@ -1,9 +1,6 @@
 package com.gmail.vishchak.denis.recipesharing.controller;
 
-import com.gmail.vishchak.denis.recipesharing.dto.CommentAddDTO;
-import com.gmail.vishchak.denis.recipesharing.dto.RecipeCreateDTO;
-import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
-import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.*;
 import com.gmail.vishchak.denis.recipesharing.model.Comment;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
 import com.gmail.vishchak.denis.recipesharing.service.CommentService;
@@ -46,13 +43,13 @@ public class RecipeController {
     }
 
     @PostMapping("/{recipeId}/rate")
-    public ResponseEntity<?> addRatingToRecipe(@PathVariable Long recipeId, @RequestParam Long userId, @RequestParam int rating) {
+    public ResponseEntity<?> addRatingToRecipe(@PathVariable("recipeId") Long recipeId, @RequestParam Long userId, @RequestParam int rating) {
         recipeService.rateRecipe(recipeId, userId, rating);
         return ResponseEntity.ok("Rating added successfully");
     }
 
-    @PostMapping("/{recipeId}/comments")
-    public ResponseEntity<?> addCommentToRecipe(@PathVariable Long recipeId, @RequestBody CommentAddDTO commentAddDTO) {
+    @PostMapping("/{recipeId}/comment")
+    public ResponseEntity<?> addCommentToRecipe(@PathVariable("recipeId") Long recipeId, @RequestBody CommentAddDTO commentAddDTO) {
         commentAddDTO.setRecipeId(recipeId);
         Comment comment = commentService.saveComment(commentAddDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(comment);
