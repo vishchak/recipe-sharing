@@ -3,6 +3,7 @@ package com.gmail.vishchak.denis.recipesharing.serviceImpl;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeCreateDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
 import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.UserThumbnailDTO;
 import com.gmail.vishchak.denis.recipesharing.exception.custom.BadRequestException;
 import com.gmail.vishchak.denis.recipesharing.exception.custom.NoContentException;
 import com.gmail.vishchak.denis.recipesharing.exception.custom.NotFoundException;
@@ -56,6 +57,12 @@ public class RecipeServiceImpl implements RecipeService {
             ((RecipeThumbnailDTO) dto).setRating(averageRating);
         } else if (dto instanceof RecipeDTO) {
             ((RecipeDTO) dto).setRating(averageRating);
+            ((RecipeDTO) dto).setUser(
+                    new UserThumbnailDTO(
+                            recipe.getUser().getId(),
+                            recipe.getUser().getUsername(),
+                            recipe.getUser().getImage()
+                    ));
         }
 
         return dto;

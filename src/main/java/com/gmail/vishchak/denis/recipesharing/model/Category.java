@@ -1,5 +1,7 @@
 package com.gmail.vishchak.denis.recipesharing.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +21,8 @@ public class Category {
     private String name;
 
     @ManyToMany(mappedBy = "categories")
+    @JsonBackReference
+    @JsonIdentityReference(alwaysAsId = true)
     private List<Recipe> recipes;
 
     public Category(String name) {

@@ -1,5 +1,6 @@
 package com.gmail.vishchak.denis.recipesharing.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class Nutrition {
 
     @OneToOne
     @JoinColumn(name = "recipe_id")
+    @JsonBackReference
     private Recipe recipe;
 }
 

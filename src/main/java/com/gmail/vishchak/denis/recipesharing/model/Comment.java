@@ -1,5 +1,6 @@
 package com.gmail.vishchak.denis.recipesharing.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,24 +19,22 @@ public class Comment {
     private Long id;
 
     private String content;
-
     private String image;
-
     private Integer likes;
-
     private Integer dislikes;
 
     @Temporal(TemporalType.DATE)
     private Date date;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "recipe_id")
+    @JsonBackReference
     private Recipe recipe;
 
     @OneToMany(mappedBy = "comment")
     private List<Reply> replies;
 }
-

@@ -1,5 +1,7 @@
 package com.gmail.vishchak.denis.recipesharing.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,12 +19,11 @@ public class Ingredient {
     private Long id;
 
     private String name;
-
     private String description;
-
     private String image;
 
     @ManyToMany(mappedBy = "ingredients")
+    @JsonBackReference
+    @JsonIdentityReference(alwaysAsId = true)
     private List<Recipe> recipes;
 }
-
