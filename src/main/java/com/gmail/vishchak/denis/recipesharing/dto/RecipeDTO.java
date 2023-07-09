@@ -24,7 +24,7 @@ public class RecipeDTO {
     private Integer cookingTime;
     private Double rating;
 
-    private UserThumbnailDTO user;
+    private UserDTO user;
 
     @JsonManagedReference
     private Nutrition nutrition;
