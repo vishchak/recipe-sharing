@@ -32,10 +32,11 @@ public class User implements UserDetails {
     private String password;
 
     private String image;
-
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    @OneToMany(mappedBy = "user")
+    private List<Token> tokens;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private MealPlan mealPlan;

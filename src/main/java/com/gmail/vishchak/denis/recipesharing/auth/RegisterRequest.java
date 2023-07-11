@@ -1,5 +1,6 @@
 package com.gmail.vishchak.denis.recipesharing.auth;
 
+import com.gmail.vishchak.denis.recipesharing.model.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterRequest {
-    String username;
-    String email;
-    String password;
+    private String username;
+    private String email;
+    private String password;
+    private UserRole role;
 }
