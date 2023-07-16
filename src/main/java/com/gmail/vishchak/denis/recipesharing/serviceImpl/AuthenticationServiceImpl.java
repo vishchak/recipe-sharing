@@ -1,9 +1,9 @@
 package com.gmail.vishchak.denis.recipesharing.serviceImpl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gmail.vishchak.denis.recipesharing.auth.AuthenticationRequest;
-import com.gmail.vishchak.denis.recipesharing.auth.AuthenticationResponse;
-import com.gmail.vishchak.denis.recipesharing.auth.RegisterRequest;
+import com.gmail.vishchak.denis.recipesharing.dto.auth.AuthenticationRequest;
+import com.gmail.vishchak.denis.recipesharing.dto.auth.AuthenticationResponse;
+import com.gmail.vishchak.denis.recipesharing.dto.auth.RegisterRequest;
 import com.gmail.vishchak.denis.recipesharing.config.JwtService;
 import com.gmail.vishchak.denis.recipesharing.exception.custom.BadRequestException;
 import com.gmail.vishchak.denis.recipesharing.model.Token;

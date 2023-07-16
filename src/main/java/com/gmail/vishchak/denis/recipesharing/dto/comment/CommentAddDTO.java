@@ -1,4 +1,4 @@
-package com.gmail.vishchak.denis.recipesharing.dto;
+package com.gmail.vishchak.denis.recipesharing.dto.comment;
 
 
 public record CommentAddDTO(

@@ -1,8 +1,11 @@
 package com.gmail.vishchak.denis.recipesharing.controller;
 
-import com.gmail.vishchak.denis.recipesharing.dto.*;
+import com.gmail.vishchak.denis.recipesharing.dto.comment.CommentAddDTO;
 import com.gmail.vishchak.denis.recipesharing.model.Comment;
-import com.gmail.vishchak.denis.recipesharing.model.Recipe;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateRequest;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateResponse;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeResponse;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeThumbnailResponse;
 import com.gmail.vishchak.denis.recipesharing.service.CommentService;
 import com.gmail.vishchak.denis.recipesharing.service.RecipeService;
 import jakarta.validation.Valid;
@@ -25,20 +28,20 @@ public class RecipeController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<RecipeThumbnailDTO>> getAllRecipes(@RequestParam(defaultValue = "10") int limit) {
-        List<RecipeThumbnailDTO> recipes = recipeService.getAllRecipes(limit);
+    public ResponseEntity<List<RecipeThumbnailResponse>> getAllRecipes(@RequestParam(defaultValue = "10") int limit) {
+        List<RecipeThumbnailResponse> recipes = recipeService.getAllRecipes(limit);
         return ResponseEntity.ok(recipes);
     }
 
     @PostMapping("/add")
-    public ResponseEntity<?> createRecipe(@Valid @RequestBody RecipeCreateDTO recipeCreateDTO, BindingResult bindingResult) {
-        Recipe createdRecipe = recipeService.createRecipe(recipeCreateDTO, bindingResult);
+    public ResponseEntity<RecipeCreateResponse> createRecipe(@Valid @RequestBody RecipeCreateRequest recipeCreateRequest, BindingResult bindingResult) {
+        RecipeCreateResponse createdRecipe = recipeService.createRecipe(recipeCreateRequest, bindingResult);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRecipe);
     }
 
     @GetMapping("/{recipeId}")
     public ResponseEntity<?> getRecipeById(@PathVariable Long recipeId) {
-        RecipeDTO recipe = recipeService.getRecipeDtoById(recipeId);
+        RecipeResponse recipe = recipeService.getRecipe(recipeId);
         return ResponseEntity.ok(recipe);
     }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.gmail.vishchak.denis.recipesharing.model.enums.Difficulty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Recipe {
@@ -70,17 +72,4 @@ public class Recipe {
 
     @ManyToMany(mappedBy = "recipes")
     private List<Collection> collections;
-
-    public Recipe(String title, String description, String image, Integer cookingTime, Date date, Difficulty difficulty, Nutrition nutrition, User user, List<Category> categories, List<Ingredient> ingredients) {
-        this.title = title;
-        this.description = description;
-        this.image = image;
-        this.cookingTime = cookingTime;
-        this.date = date;
-        this.difficulty = difficulty;
-        this.nutrition = nutrition;
-        this.user = user;
-        this.categories = categories;
-        this.ingredients = ingredients;
-    }
 }

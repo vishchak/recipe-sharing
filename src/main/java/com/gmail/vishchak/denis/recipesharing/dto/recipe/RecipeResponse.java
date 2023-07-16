@@ -1,10 +1,12 @@
-package com.gmail.vishchak.denis.recipesharing.dto;
+package com.gmail.vishchak.denis.recipesharing.dto.recipe;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.gmail.vishchak.denis.recipesharing.dto.user.UserDTO;
 import com.gmail.vishchak.denis.recipesharing.model.*;
 import com.gmail.vishchak.denis.recipesharing.model.enums.Difficulty;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,9 +14,10 @@ import java.util.Date;
 import java.util.List;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecipeDTO {
+public class RecipeResponse {
     private Long id;
     private String title;
     private String description;

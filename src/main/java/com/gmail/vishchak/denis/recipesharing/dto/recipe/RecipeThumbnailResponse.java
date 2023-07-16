@@ -1,4 +1,4 @@
-package com.gmail.vishchak.denis.recipesharing.dto;
+package com.gmail.vishchak.denis.recipesharing.dto.recipe;
 
 import com.gmail.vishchak.denis.recipesharing.model.enums.Difficulty;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecipeThumbnailDTO {
+public class RecipeThumbnailResponse {
     private Long id;
     private String title;
     private String image;

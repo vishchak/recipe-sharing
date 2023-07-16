@@ -1,4 +1,4 @@
-package com.gmail.vishchak.denis.recipesharing.auth;
+package com.gmail.vishchak.denis.recipesharing.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

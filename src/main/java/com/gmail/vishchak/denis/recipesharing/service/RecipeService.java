@@ -1,8 +1,9 @@
 package com.gmail.vishchak.denis.recipesharing.service;
 
-import com.gmail.vishchak.denis.recipesharing.dto.RecipeCreateDTO;
-import com.gmail.vishchak.denis.recipesharing.dto.RecipeDTO;
-import com.gmail.vishchak.denis.recipesharing.dto.RecipeThumbnailDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateRequest;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateResponse;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeResponse;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeThumbnailResponse;
 import com.gmail.vishchak.denis.recipesharing.model.Category;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
 import org.springframework.validation.BindingResult;
@@ -11,29 +12,31 @@ import java.util.List;
 import java.util.Map;
 
 public interface RecipeService {
-    List<RecipeThumbnailDTO> getRecipesByTitle(String title);
+    RecipeCreateResponse createRecipe(RecipeCreateRequest recipeCreateRequest, BindingResult bindingResult);
 
-    List<RecipeThumbnailDTO> getRecipesByMaxCookingTime(int maxCookingTime);
+    RecipeResponse getRecipe(Long recipeId);
 
-    List<RecipeThumbnailDTO> getRecipesByCategories(List<Category> categories);
+    void rateRecipe(Long recipeId, Long userId, int rating);
 
-    List<RecipeThumbnailDTO> getRecipesByIngredient(Long ingredientID);
+    List<RecipeThumbnailResponse> getAllRecipes(int limit);
 
-    List<RecipeThumbnailDTO> getTopRatedRecipes(int limit);
+    List<RecipeThumbnailResponse> getRecipesByTitle(String title);
 
-    RecipeDTO getRecipeDtoById(Long recipeId);
+    List<RecipeThumbnailResponse> getRecipesByMaxCookingTime(int maxCookingTime);
 
-    Recipe createRecipe(RecipeCreateDTO recipeCreateDTO, BindingResult bindingResult);
+    List<RecipeThumbnailResponse> getRecipesByCategories(List<Category> categories);
+
+    List<RecipeThumbnailResponse> getRecipesByIngredient(Long ingredientID);
+
+    List<RecipeThumbnailResponse> getTopRatedRecipes(int limit);
 
     Recipe updateRecipe(Long recipeId, Map<String, Object> fields);
 
     void deleteRecipe(Long recipeId);
 
-    void rateRecipe(Long recipeId, Long userId, int rating);
+    List<RecipeThumbnailResponse> getUserFavoriteRecipes(Long userId);
 
-    List<RecipeThumbnailDTO> getUserFavoriteRecipes(Long userId);
+    List<RecipeThumbnailResponse> getUserSubmittedRecipes(Long userId);
 
-    List<RecipeThumbnailDTO> getUserSubmittedRecipes(Long userId);
 
-    List<RecipeThumbnailDTO> getAllRecipes(int limit);
 }

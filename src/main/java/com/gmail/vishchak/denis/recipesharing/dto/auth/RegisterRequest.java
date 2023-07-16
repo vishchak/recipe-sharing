@@ -1,5 +1,6 @@
-package com.gmail.vishchak.denis.recipesharing.auth;
+package com.gmail.vishchak.denis.recipesharing.dto.auth;
 
+import com.gmail.vishchak.denis.recipesharing.model.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +10,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthenticationRequest {
+public class RegisterRequest {
     private String username;
+    private String email;
     private String password;
+    private UserRole role;
 }

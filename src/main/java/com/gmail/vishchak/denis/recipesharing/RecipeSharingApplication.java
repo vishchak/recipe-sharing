@@ -1,6 +1,6 @@
 package com.gmail.vishchak.denis.recipesharing;
 
-import com.gmail.vishchak.denis.recipesharing.auth.RegisterRequest;
+import com.gmail.vishchak.denis.recipesharing.dto.auth.RegisterRequest;
 import com.gmail.vishchak.denis.recipesharing.model.enums.UserRole;
 import com.gmail.vishchak.denis.recipesharing.service.AuthenticationService;
 import org.springframework.boot.CommandLineRunner;

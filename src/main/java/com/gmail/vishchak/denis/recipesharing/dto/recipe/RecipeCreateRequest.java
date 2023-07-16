@@ -1,4 +1,4 @@
-package com.gmail.vishchak.denis.recipesharing.dto;
+package com.gmail.vishchak.denis.recipesharing.dto.recipe;
 
 import com.gmail.vishchak.denis.recipesharing.model.Nutrition;
 import com.gmail.vishchak.denis.recipesharing.model.enums.Difficulty;
@@ -7,15 +7,17 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
-@NoArgsConstructor
+@Builder
 @AllArgsConstructor
-public class RecipeCreateDTO {
+@NoArgsConstructor
+public class RecipeCreateRequest {
     @NotBlank(message = "Title is required")
     private String title;
 

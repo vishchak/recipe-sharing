@@ -1,6 +1,6 @@
 package com.gmail.vishchak.denis.recipesharing.controller;
 
-import com.gmail.vishchak.denis.recipesharing.dto.UserDTO;
+import com.gmail.vishchak.denis.recipesharing.dto.user.UserDTO;
 import com.gmail.vishchak.denis.recipesharing.model.User;
 import com.gmail.vishchak.denis.recipesharing.service.UserService;
 import org.modelmapper.ModelMapper;

@@ -1,12 +1,18 @@
 package com.gmail.vishchak.denis.recipesharing.serviceImpl;
 
-import com.gmail.vishchak.denis.recipesharing.dto.*;
+import com.gmail.vishchak.denis.recipesharing.dto.user.UserDTO;
 import com.gmail.vishchak.denis.recipesharing.exception.custom.BadRequestException;
 import com.gmail.vishchak.denis.recipesharing.exception.custom.NoContentException;
 import com.gmail.vishchak.denis.recipesharing.exception.custom.NotFoundException;
 import com.gmail.vishchak.denis.recipesharing.model.*;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateRequest;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateResponse;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeResponse;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeThumbnailResponse;
 import com.gmail.vishchak.denis.recipesharing.repository.*;
 import com.gmail.vishchak.denis.recipesharing.service.RecipeService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -18,29 +24,24 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class RecipeServiceImpl implements RecipeService {
     private final RecipeRepository recipeRepository;
     private final UserRepository userRepository;
     private final IngredientRepository ingredientRepository;
     private final RatingRepository ratingRepository;
-
     private final CategoryRepository categoryRepository;
 
-    public RecipeServiceImpl(RecipeRepository recipeRepository, UserRepository userRepository, IngredientRepository ingredientRepository, RatingRepository ratingRepository, CategoryRepository categoryRepository) {
-        this.recipeRepository = recipeRepository;
-        this.userRepository = userRepository;
-        this.ingredientRepository = ingredientRepository;
-        this.ratingRepository = ratingRepository;
-        this.categoryRepository = categoryRepository;
-    }
 
-    private List<RecipeThumbnailDTO> mapRecipeListToDTO(List<Recipe> recipes) {
+    private List<RecipeThumbnailResponse> mapRecipeListToDTO(List<Recipe> recipes) {
         if (recipes == null) {
             return Collections.emptyList();
         }
 
         return recipes.stream()
-                .map(recipe -> mapRecipeToDTO(recipe, RecipeThumbnailDTO.class))
+                .map(recipe -> mapRecipeToDTO(recipe, RecipeThumbnailResponse.class))
                 .collect(Collectors.toList());
     }
 
@@ -50,11 +51,11 @@ public class RecipeServiceImpl implements RecipeService {
 
         double averageRating = calculateAverageRating(recipe.getRatings());
 
-        if (dto instanceof RecipeThumbnailDTO) {
-            ((RecipeThumbnailDTO) dto).setRating(averageRating);
-        } else if (dto instanceof RecipeDTO) {
-            ((RecipeDTO) dto).setRating(averageRating);
-            ((RecipeDTO) dto).setUser(
+        if (dto instanceof RecipeThumbnailResponse) {
+            ((RecipeThumbnailResponse) dto).setRating(averageRating);
+        } else if (dto instanceof RecipeResponse) {
+            ((RecipeResponse) dto).setRating(averageRating);
+            ((RecipeResponse) dto).setUser(
                     new UserDTO(
                             recipe.getUser().getId(),
                             recipe.getUser().getUsername(),
@@ -74,8 +75,51 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<RecipeThumbnailDTO> getRecipesByTitle(String title) {
+    public RecipeCreateResponse createRecipe(RecipeCreateRequest request, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            throw new BadRequestException("Invalid recipe data");
+        }
+
+        List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
+        List<Ingredient> ingredients = ingredientRepository.findAllById(request.getIngredientIds());
+
+        if (categories.isEmpty()) {
+            throw new NotFoundException("Categories not found");
+        }
+
+        if (ingredients.isEmpty()) {
+            throw new NotFoundException("Ingredients not found");
+        }
+
+        User user = userRepository.findById(request.getUserId()).orElseThrow(() -> new NotFoundException("User not found"));
+
+        Recipe recipe = Recipe.builder()
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .image(request.getImage())
+                .cookingTime(request.getCookingTime())
+                .date(new Date())
+                .difficulty(request.getDifficulty())
+                .nutrition(request.getNutrition())
+                .user(user)
+                .categories(categories)
+                .ingredients(ingredients)
+                .build();
+
+        log.info("Saving new recipe {} to DB", recipe.getTitle());
+        request.getNutrition().setRecipe(recipe);
+        recipeRepository.save(recipe);
+
+        return RecipeCreateResponse.builder()
+                .title(recipe.getTitle())
+                .recipeId(recipe.getId())
+                .userId(recipe.getUser().getId())
+                .date(recipe.getDate())
+                .build();
+    }
+
+    @Override
+    public List<RecipeThumbnailResponse> getRecipesByTitle(String title) {
         List<Recipe> recipes = recipeRepository.findByTitleContainingIgnoreCase(title);
 
         return Optional.of(recipes)
@@ -85,8 +129,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<RecipeThumbnailDTO> getRecipesByMaxCookingTime(int maxCookingTime) {
+    public List<RecipeThumbnailResponse> getRecipesByMaxCookingTime(int maxCookingTime) {
         List<Recipe> recipes = recipeRepository.findByCookingTimeLessThanEqual(maxCookingTime);
 
         return Optional.of(recipes)
@@ -96,8 +139,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<RecipeThumbnailDTO> getRecipesByCategories(List<Category> categories) {
+    public List<RecipeThumbnailResponse> getRecipesByCategories(List<Category> categories) {
         List<Recipe> recipes = recipeRepository.findByCategories(categories);
 
         return Optional.of(recipes)
@@ -107,8 +149,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<RecipeThumbnailDTO> getRecipesByIngredient(Long ingredientId) {
+    public List<RecipeThumbnailResponse> getRecipesByIngredient(Long ingredientId) {
         return ingredientRepository.findById(ingredientId)
                 .map(Ingredient::getRecipes)
                 .map(recipes -> {
@@ -122,8 +163,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<RecipeThumbnailDTO> getTopRatedRecipes(int limit) {
+    public List<RecipeThumbnailResponse> getTopRatedRecipes(int limit) {
         List<Recipe> topRatedRecipes = recipeRepository.findTopRatedRecipesWithRatingGreaterThan(5, PageRequest.of(0, limit));
 
         return Optional.of(topRatedRecipes)
@@ -134,49 +174,11 @@ public class RecipeServiceImpl implements RecipeService {
 
 
     @Override
-    @Transactional(readOnly = true)
-    public RecipeDTO getRecipeDtoById(Long recipeId) {
+    public RecipeResponse getRecipe(Long recipeId) {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new NotFoundException("Recipe not found"));
 
-        return mapRecipeToDTO(recipe, RecipeDTO.class);
-    }
-
-
-    @Override
-    @Transactional
-    public Recipe createRecipe(RecipeCreateDTO recipeCreateDTO, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            throw new BadRequestException("Invalid recipe data");
-        }
-
-        List<Category> categories = categoryRepository.findAllById(recipeCreateDTO.getCategoryIds());
-        List<Ingredient> ingredients = ingredientRepository.findAllById(recipeCreateDTO.getIngredientIds());
-
-        if (categories.isEmpty()) {
-            throw new NotFoundException("Categories not found");
-        }
-
-        if (ingredients.isEmpty()) {
-            throw new NotFoundException("Ingredients not found");
-        }
-
-        User user = userRepository.findById(recipeCreateDTO.getUserId()).orElseThrow(() -> new NotFoundException("User not found"));
-        Recipe recipe = new Recipe(
-                recipeCreateDTO.getTitle(),
-                recipeCreateDTO.getDescription(),
-                recipeCreateDTO.getImage(),
-                recipeCreateDTO.getCookingTime(),
-                new Date(),
-                recipeCreateDTO.getDifficulty(),
-                recipeCreateDTO.getNutrition(),
-                user,
-                categories,
-                ingredients);
-
-        recipeCreateDTO.getNutrition().setRecipe(recipe);
-
-        return recipeRepository.save(recipe);
+        return mapRecipeToDTO(recipe, RecipeResponse.class);
     }
 
 
@@ -203,13 +205,11 @@ public class RecipeServiceImpl implements RecipeService {
 
 
     @Override
-    @Transactional
     public void deleteRecipe(Long recipeId) {
         recipeRepository.deleteById(recipeId);
     }
 
     @Override
-    @Transactional
     public void rateRecipe(Long recipeId, Long userId, int rating) {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new NotFoundException("Recipe not found with id: " + recipeId));
@@ -228,8 +228,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<RecipeThumbnailDTO> getUserFavoriteRecipes(Long userId) {
+    public List<RecipeThumbnailResponse> getUserFavoriteRecipes(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
         return Optional.of(user.getFavorites())
@@ -239,8 +238,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<RecipeThumbnailDTO> getUserSubmittedRecipes(Long userId) {
+    public List<RecipeThumbnailResponse> getUserSubmittedRecipes(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
@@ -253,8 +251,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<RecipeThumbnailDTO> getAllRecipes(int limit) {
+    public List<RecipeThumbnailResponse> getAllRecipes(int limit) {
         List<Recipe> recipes = recipeRepository.findAll(PageRequest.of(0, limit)).getContent();
 
         return Optional.of(recipes)
