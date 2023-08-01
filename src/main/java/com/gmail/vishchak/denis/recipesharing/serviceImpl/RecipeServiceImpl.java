@@ -213,7 +213,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public void rateRecipe(Long recipeId, Long userId, int rating) {
+    public boolean rateRecipe(Long recipeId, Long userId, int rating) {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new NotFoundException("Recipe not found with id: " + recipeId));
         User user = userRepository.findById(userId)
@@ -225,10 +225,13 @@ public class RecipeServiceImpl implements RecipeService {
             Rating ratingEntity = existingRating.get();
             ratingEntity.setValue(rating);
             ratingRepository.save(ratingEntity);
+            return true; // Rating was updated
         } else {
             ratingRepository.save(new Rating(rating, recipe, user));
+            return false; // Rating was added
         }
     }
+
 
     @Override
     public List<RecipeThumbnailResponse> getUserFavoriteRecipes(Long userId) {

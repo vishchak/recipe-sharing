@@ -18,7 +18,7 @@ public interface RecipeService {
 
     RecipeResponse getRecipe(Long recipeId);
 
-    void rateRecipe(Long recipeId, Long userId, int rating);
+    boolean rateRecipe(Long recipeId, Long userId, int rating);
 
     Page<RecipeThumbnailResponse> getAllRecipes(Pageable pageable);
 

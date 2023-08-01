@@ -1,6 +1,7 @@
 package com.gmail.vishchak.denis.recipesharing.controller;
 
 import com.gmail.vishchak.denis.recipesharing.dto.comment.CommentAddDTO;
+import com.gmail.vishchak.denis.recipesharing.exception.custom.NotFoundException;
 import com.gmail.vishchak.denis.recipesharing.model.Comment;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateRequest;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateResponse;
@@ -51,9 +52,18 @@ public class RecipeController {
     }
 
     @PostMapping("/{recipeId}/rate")
-    public ResponseEntity<?> addRatingToRecipe(@PathVariable("recipeId") Long recipeId, @RequestParam Long userId, @RequestParam int rating) {
-        recipeService.rateRecipe(recipeId, userId, rating);
-        return ResponseEntity.ok("Rating added successfully");
+    public ResponseEntity<String> addRatingToRecipe(@PathVariable("recipeId") Long recipeId,
+                                                    @RequestParam Long userId,
+                                                    @RequestParam int rating) {
+        try {
+            boolean ratingUpdated = recipeService.rateRecipe(recipeId, userId, rating);
+            String responseMessage = ratingUpdated ? "Rating updated successfully" : "Rating added successfully";
+            HttpStatus responseStatus = ratingUpdated ? HttpStatus.OK : HttpStatus.CREATED;
+
+            return ResponseEntity.status(responseStatus).body(responseMessage);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @PostMapping("/{recipeId}/comment")
