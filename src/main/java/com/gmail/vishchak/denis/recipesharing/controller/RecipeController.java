@@ -9,6 +9,9 @@ import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeThumbnailResponse
 import com.gmail.vishchak.denis.recipesharing.service.CommentService;
 import com.gmail.vishchak.denis.recipesharing.service.RecipeService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -28,9 +31,11 @@ public class RecipeController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<RecipeThumbnailResponse>> getAllRecipes(@RequestParam(defaultValue = "10") int limit) {
-        List<RecipeThumbnailResponse> recipes = recipeService.getAllRecipes(limit);
-        return ResponseEntity.ok(recipes);
+    public ResponseEntity<Page<RecipeThumbnailResponse>> getAllRecipes(@RequestParam(defaultValue = "0") int page,
+                                                                       @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<RecipeThumbnailResponse> recipesPage = recipeService.getAllRecipes(pageable);
+        return ResponseEntity.ok(recipesPage);
     }
 
     @PostMapping("/add")

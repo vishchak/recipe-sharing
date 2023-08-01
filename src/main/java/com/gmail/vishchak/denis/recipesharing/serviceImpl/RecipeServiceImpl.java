@@ -14,7 +14,10 @@ import com.gmail.vishchak.denis.recipesharing.service.RecipeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
@@ -251,12 +254,18 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public List<RecipeThumbnailResponse> getAllRecipes(int limit) {
-        List<Recipe> recipes = recipeRepository.findAll(PageRequest.of(0, limit)).getContent();
+    public Page<RecipeThumbnailResponse> getAllRecipes(Pageable pageable) {
+        Page<Recipe> recipesPage = recipeRepository.findAll(pageable);
 
-        return Optional.of(recipes)
-                .filter(list -> !list.isEmpty())
-                .map(this::mapRecipeListToDTO)
-                .orElseThrow(() -> new NoContentException("No recipes found"));
+        if (recipesPage.isEmpty()) {
+            throw new NoContentException("No recipes found");
+        }
+
+        List<RecipeThumbnailResponse> recipeDTOs = recipesPage.getContent()
+                .stream()
+                .map(recipe -> mapRecipeToDTO(recipe, RecipeThumbnailResponse.class))
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(recipeDTOs, pageable, recipesPage.getTotalElements());
     }
 }

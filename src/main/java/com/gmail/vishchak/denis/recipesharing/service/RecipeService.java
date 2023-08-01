@@ -6,6 +6,8 @@ import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeResponse;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeThumbnailResponse;
 import com.gmail.vishchak.denis.recipesharing.model.Category;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.BindingResult;
 
 import java.util.List;
@@ -18,7 +20,7 @@ public interface RecipeService {
 
     void rateRecipe(Long recipeId, Long userId, int rating);
 
-    List<RecipeThumbnailResponse> getAllRecipes(int limit);
+    Page<RecipeThumbnailResponse> getAllRecipes(Pageable pageable);
 
     List<RecipeThumbnailResponse> getRecipesByTitle(String title);
 
