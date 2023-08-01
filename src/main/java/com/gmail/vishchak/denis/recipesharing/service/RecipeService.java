@@ -2,7 +2,7 @@ package com.gmail.vishchak.denis.recipesharing.service;
 
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateRequest;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateResponse;
-import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeResponse;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeGetResponse;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeThumbnailResponse;
 import com.gmail.vishchak.denis.recipesharing.model.Category;
 import com.gmail.vishchak.denis.recipesharing.model.Recipe;
@@ -16,7 +16,7 @@ import java.util.Map;
 public interface RecipeService {
     RecipeCreateResponse createRecipe(RecipeCreateRequest recipeCreateRequest, BindingResult bindingResult);
 
-    RecipeResponse getRecipe(Long recipeId);
+    RecipeGetResponse getRecipe(Long recipeId);
 
     boolean rateRecipe(Long recipeId, Long userId, int rating);
 
@@ -39,6 +39,4 @@ public interface RecipeService {
     List<RecipeThumbnailResponse> getUserFavoriteRecipes(Long userId);
 
     List<RecipeThumbnailResponse> getUserSubmittedRecipes(Long userId);
-
-
 }

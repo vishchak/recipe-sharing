@@ -4,7 +4,7 @@ import com.gmail.vishchak.denis.recipesharing.dto.comment.CommentAddRequest;
 import com.gmail.vishchak.denis.recipesharing.dto.comment.CommentAddResponse;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateRequest;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateResponse;
-import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeResponse;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeGetResponse;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeThumbnailResponse;
 import com.gmail.vishchak.denis.recipesharing.service.CommentService;
 import com.gmail.vishchak.denis.recipesharing.service.RecipeService;
@@ -44,8 +44,8 @@ public class RecipeController {
     }
 
     @GetMapping("/{recipeId}")
-    public ResponseEntity<RecipeResponse> getRecipeById(@PathVariable Long recipeId) {
-        RecipeResponse recipe = recipeService.getRecipe(recipeId);
+    public ResponseEntity<RecipeGetResponse> getRecipeById(@PathVariable Long recipeId) {
+        RecipeGetResponse recipe = recipeService.getRecipe(recipeId);
         return ResponseEntity.ok(recipe);
     }
 

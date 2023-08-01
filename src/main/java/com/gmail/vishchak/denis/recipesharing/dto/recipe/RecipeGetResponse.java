@@ -17,7 +17,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecipeResponse {
+public class RecipeGetResponse {
     private Long id;
     private String title;
     private String description;

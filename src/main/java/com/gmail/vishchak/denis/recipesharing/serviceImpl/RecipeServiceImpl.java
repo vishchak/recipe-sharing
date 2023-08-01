@@ -7,7 +7,7 @@ import com.gmail.vishchak.denis.recipesharing.exception.custom.NotFoundException
 import com.gmail.vishchak.denis.recipesharing.model.*;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateRequest;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateResponse;
-import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeResponse;
+import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeGetResponse;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeThumbnailResponse;
 import com.gmail.vishchak.denis.recipesharing.repository.*;
 import com.gmail.vishchak.denis.recipesharing.service.RecipeService;
@@ -38,37 +38,28 @@ public class RecipeServiceImpl implements RecipeService {
     private final CategoryRepository categoryRepository;
 
 
-    private List<RecipeThumbnailResponse> mapRecipeListToDTO(List<Recipe> recipes) {
+    private List<RecipeThumbnailResponse> mapToRecipeThumbnailResponseList(List<Recipe> recipes) {
         if (recipes == null) {
             return Collections.emptyList();
         }
 
         return recipes.stream()
-                .map(recipe -> mapRecipeToDTO(recipe, RecipeThumbnailResponse.class))
+                .map(this::mapToRecipeThumbnailResponse)
                 .collect(Collectors.toList());
     }
 
-    private <T> T mapRecipeToDTO(Recipe recipe, Class<T> dtoClass) {
-        ModelMapper modelMapper = new ModelMapper();
-        T dto = modelMapper.map(recipe, dtoClass);
+    private RecipeThumbnailResponse mapToRecipeThumbnailResponse(Recipe recipe) {
+        Double rating = calculateAverageRating(recipe.getRatings());
 
-        double averageRating = calculateAverageRating(recipe.getRatings());
-
-        if (dto instanceof RecipeThumbnailResponse) {
-            ((RecipeThumbnailResponse) dto).setRating(averageRating);
-        } else if (dto instanceof RecipeResponse) {
-            ((RecipeResponse) dto).setRating(averageRating);
-            ((RecipeResponse) dto).setUser(
-                    new UserDTO(
-                            recipe.getUser().getId(),
-                            recipe.getUser().getUsername(),
-                            recipe.getUser().getImage()
-                    ));
-        }
-
-        return dto;
+        return RecipeThumbnailResponse.builder()
+                .id(recipe.getId())
+                .title(recipe.getTitle())
+                .image(recipe.getImage())
+                .cookingTime(recipe.getCookingTime())
+                .rating(rating)
+                .difficulty(recipe.getDifficulty())
+                .build();
     }
-
 
     private double calculateAverageRating(List<Rating> ratings) {
         return ratings.stream()
@@ -122,94 +113,31 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public List<RecipeThumbnailResponse> getRecipesByTitle(String title) {
-        List<Recipe> recipes = recipeRepository.findByTitleContainingIgnoreCase(title);
-
-        return Optional.of(recipes)
-                .filter(list -> !list.isEmpty())
-                .map(this::mapRecipeListToDTO)
-                .orElseThrow(() -> new NoContentException("No recipes found"));
-    }
-
-    @Override
-    public List<RecipeThumbnailResponse> getRecipesByMaxCookingTime(int maxCookingTime) {
-        List<Recipe> recipes = recipeRepository.findByCookingTimeLessThanEqual(maxCookingTime);
-
-        return Optional.of(recipes)
-                .filter(list -> !list.isEmpty())
-                .map(this::mapRecipeListToDTO)
-                .orElseThrow(() -> new NoContentException("No recipes found"));
-    }
-
-    @Override
-    public List<RecipeThumbnailResponse> getRecipesByCategories(List<Category> categories) {
-        List<Recipe> recipes = recipeRepository.findByCategories(categories);
-
-        return Optional.of(recipes)
-                .filter(list -> !list.isEmpty())
-                .map(this::mapRecipeListToDTO)
-                .orElseThrow(() -> new NoContentException("No recipes found"));
-    }
-
-    @Override
-    public List<RecipeThumbnailResponse> getRecipesByIngredient(Long ingredientId) {
-        return ingredientRepository.findById(ingredientId)
-                .map(Ingredient::getRecipes)
-                .map(recipes -> {
-                    if (!recipes.isEmpty()) {
-                        return mapRecipeListToDTO(recipes);
-                    } else {
-                        throw new NoContentException("No recipes found for the ingredient");
-                    }
-                })
-                .orElseThrow(() -> new NotFoundException("Ingredient not found"));
-    }
-
-    @Override
-    public List<RecipeThumbnailResponse> getTopRatedRecipes(int limit) {
-        List<Recipe> topRatedRecipes = recipeRepository.findTopRatedRecipesWithRatingGreaterThan(5, PageRequest.of(0, limit));
-
-        return Optional.of(topRatedRecipes)
-                .filter(list -> !list.isEmpty())
-                .map(this::mapRecipeListToDTO)
-                .orElseThrow(() -> new NoContentException("No recipes found"));
-    }
-
-
-    @Override
-    public RecipeResponse getRecipe(Long recipeId) {
+    public RecipeGetResponse getRecipe(Long recipeId) {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new NotFoundException("Recipe not found"));
 
-        return mapRecipeToDTO(recipe, RecipeResponse.class);
-    }
+        Double rating = calculateAverageRating(recipe.getRatings());
 
-
-    @Override
-    @Transactional
-    public Recipe updateRecipe(Long recipeId, Map<String, Object> fields) {
-        Recipe existingRecipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new NotFoundException("Recipe not found"));
-
-        fields.forEach((fieldName, value) -> {
-            if (Objects.nonNull(value)) {
-                try {
-                    Field field = Recipe.class.getDeclaredField(fieldName);
-                    field.setAccessible(true);
-                    field.set(existingRecipe, value);
-                } catch (NoSuchFieldException | IllegalAccessException e) {
-                    throw new BadRequestException("Invalid field name: " + fieldName);
-                }
-            }
-        });
-
-        return recipeRepository.save(existingRecipe);
-    }
-
-
-    @Override
-    public void deleteRecipe(Long recipeId) {
-        recipeRepository.deleteById(recipeId);
+        return RecipeGetResponse.builder()
+                .id(recipe.getId())
+                .title(recipe.getTitle())
+                .description(recipe.getDescription())
+                .image(recipe.getImage())
+                .date(recipe.getDate())
+                .difficulty(recipe.getDifficulty())
+                .cookingTime(recipe.getCookingTime())
+                .rating(rating)
+                .user(UserDTO.builder()
+                        .id(recipe.getUser().getId())
+                        .username(recipe.getUser().getUsername())
+                        .image(recipe.getUser().getImage())
+                        .build())
+                .nutrition(recipe.getNutrition())
+                .categories(recipe.getCategories())
+                .ingredients(recipe.getIngredients())
+                .comments(recipe.getComments())
+                .build();
     }
 
     @Override
@@ -232,6 +160,75 @@ public class RecipeServiceImpl implements RecipeService {
         }
     }
 
+    @Override
+    public Page<RecipeThumbnailResponse> getAllRecipes(Pageable pageable) {
+        Page<Recipe> recipesPage = recipeRepository.findAll(pageable);
+
+        if (recipesPage.isEmpty()) {
+            throw new NoContentException("No recipes found");
+        }
+
+        List<RecipeThumbnailResponse> recipeDTOs = recipesPage.getContent()
+                .stream()
+                .map(this::mapToRecipeThumbnailResponse)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(recipeDTOs, pageable, recipesPage.getTotalElements());
+    }
+
+    @Override
+    public List<RecipeThumbnailResponse> getRecipesByTitle(String title) {
+        List<Recipe> recipes = recipeRepository.findByTitleContainingIgnoreCase(title);
+
+        return Optional.of(recipes)
+                .filter(list -> !list.isEmpty())
+                .map(this::mapToRecipeThumbnailResponseList)
+                .orElseThrow(() -> new NoContentException("No recipes found"));
+    }
+
+    @Override
+    public List<RecipeThumbnailResponse> getRecipesByMaxCookingTime(int maxCookingTime) {
+        List<Recipe> recipes = recipeRepository.findByCookingTimeLessThanEqual(maxCookingTime);
+
+        return Optional.of(recipes)
+                .filter(list -> !list.isEmpty())
+                .map(this::mapToRecipeThumbnailResponseList)
+                .orElseThrow(() -> new NoContentException("No recipes found"));
+    }
+
+    @Override
+    public List<RecipeThumbnailResponse> getRecipesByCategories(List<Category> categories) {
+        List<Recipe> recipes = recipeRepository.findByCategories(categories);
+
+        return Optional.of(recipes)
+                .filter(list -> !list.isEmpty())
+                .map(this::mapToRecipeThumbnailResponseList)
+                .orElseThrow(() -> new NoContentException("No recipes found"));
+    }
+
+    @Override
+    public List<RecipeThumbnailResponse> getRecipesByIngredient(Long ingredientId) {
+        return ingredientRepository.findById(ingredientId)
+                .map(Ingredient::getRecipes)
+                .map(recipes -> {
+                    if (!recipes.isEmpty()) {
+                        return mapToRecipeThumbnailResponseList(recipes);
+                    } else {
+                        throw new NoContentException("No recipes found for the ingredient");
+                    }
+                })
+                .orElseThrow(() -> new NotFoundException("Ingredient not found"));
+    }
+
+    @Override
+    public List<RecipeThumbnailResponse> getTopRatedRecipes(int limit) {
+        List<Recipe> topRatedRecipes = recipeRepository.findTopRatedRecipesWithRatingGreaterThan(5, PageRequest.of(0, limit));
+
+        return Optional.of(topRatedRecipes)
+                .filter(list -> !list.isEmpty())
+                .map(this::mapToRecipeThumbnailResponseList)
+                .orElseThrow(() -> new NoContentException("No recipes found"));
+    }
 
     @Override
     public List<RecipeThumbnailResponse> getUserFavoriteRecipes(Long userId) {
@@ -239,7 +236,7 @@ public class RecipeServiceImpl implements RecipeService {
 
         return Optional.of(user.getFavorites())
                 .filter(list -> !list.isEmpty())
-                .map(this::mapRecipeListToDTO)
+                .map(this::mapToRecipeThumbnailResponseList)
                 .orElseThrow(() -> new NoContentException("No recipes found"));
     }
 
@@ -252,23 +249,33 @@ public class RecipeServiceImpl implements RecipeService {
 
         return Optional.of(recipes)
                 .filter(list -> !list.isEmpty())
-                .map(this::mapRecipeListToDTO)
+                .map(this::mapToRecipeThumbnailResponseList)
                 .orElseThrow(() -> new NoContentException("No submitted recipes found for the user"));
     }
 
     @Override
-    public Page<RecipeThumbnailResponse> getAllRecipes(Pageable pageable) {
-        Page<Recipe> recipesPage = recipeRepository.findAll(pageable);
+    @Transactional
+    public Recipe updateRecipe(Long recipeId, Map<String, Object> fields) {
+        Recipe existingRecipe = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new NotFoundException("Recipe not found"));
 
-        if (recipesPage.isEmpty()) {
-            throw new NoContentException("No recipes found");
-        }
+        fields.forEach((fieldName, value) -> {
+            if (Objects.nonNull(value)) {
+                try {
+                    Field field = Recipe.class.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    field.set(existingRecipe, value);
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    throw new BadRequestException("Invalid field name: " + fieldName);
+                }
+            }
+        });
 
-        List<RecipeThumbnailResponse> recipeDTOs = recipesPage.getContent()
-                .stream()
-                .map(recipe -> mapRecipeToDTO(recipe, RecipeThumbnailResponse.class))
-                .collect(Collectors.toList());
+        return recipeRepository.save(existingRecipe);
+    }
 
-        return new PageImpl<>(recipeDTOs, pageable, recipesPage.getTotalElements());
+    @Override
+    public void deleteRecipe(Long recipeId) {
+        recipeRepository.deleteById(recipeId);
     }
 }
