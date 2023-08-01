@@ -1,7 +1,7 @@
 package com.gmail.vishchak.denis.recipesharing.dto.comment;
 
 
-public record CommentAddDTO(
+public record CommentAddRequest(
         String content,
         String image,
         Long userId

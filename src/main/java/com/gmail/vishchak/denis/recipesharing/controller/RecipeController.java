@@ -1,8 +1,7 @@
 package com.gmail.vishchak.denis.recipesharing.controller;
 
-import com.gmail.vishchak.denis.recipesharing.dto.comment.CommentAddDTO;
-import com.gmail.vishchak.denis.recipesharing.exception.custom.NotFoundException;
-import com.gmail.vishchak.denis.recipesharing.model.Comment;
+import com.gmail.vishchak.denis.recipesharing.dto.comment.CommentAddRequest;
+import com.gmail.vishchak.denis.recipesharing.dto.comment.CommentAddResponse;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateRequest;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeCreateResponse;
 import com.gmail.vishchak.denis.recipesharing.dto.recipe.RecipeResponse;
@@ -17,8 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/recipes")
@@ -40,13 +37,14 @@ public class RecipeController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<RecipeCreateResponse> createRecipe(@Valid @RequestBody RecipeCreateRequest recipeCreateRequest, BindingResult bindingResult) {
-        RecipeCreateResponse createdRecipe = recipeService.createRecipe(recipeCreateRequest, bindingResult);
+    public ResponseEntity<RecipeCreateResponse> createRecipe(@Valid @RequestBody RecipeCreateRequest request,
+                                                             BindingResult bindingResult) {
+        RecipeCreateResponse createdRecipe = recipeService.createRecipe(request, bindingResult);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRecipe);
     }
 
     @GetMapping("/{recipeId}")
-    public ResponseEntity<?> getRecipeById(@PathVariable Long recipeId) {
+    public ResponseEntity<RecipeResponse> getRecipeById(@PathVariable Long recipeId) {
         RecipeResponse recipe = recipeService.getRecipe(recipeId);
         return ResponseEntity.ok(recipe);
     }
@@ -55,20 +53,17 @@ public class RecipeController {
     public ResponseEntity<String> addRatingToRecipe(@PathVariable("recipeId") Long recipeId,
                                                     @RequestParam Long userId,
                                                     @RequestParam int rating) {
-        try {
-            boolean ratingUpdated = recipeService.rateRecipe(recipeId, userId, rating);
-            String responseMessage = ratingUpdated ? "Rating updated successfully" : "Rating added successfully";
-            HttpStatus responseStatus = ratingUpdated ? HttpStatus.OK : HttpStatus.CREATED;
+        boolean ratingUpdated = recipeService.rateRecipe(recipeId, userId, rating);
+        String responseMessage = ratingUpdated ? "Rating updated successfully" : "Rating added successfully";
+        HttpStatus responseStatus = ratingUpdated ? HttpStatus.OK : HttpStatus.CREATED;
 
-            return ResponseEntity.status(responseStatus).body(responseMessage);
-        } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+        return ResponseEntity.status(responseStatus).body(responseMessage);
     }
 
     @PostMapping("/{recipeId}/comment")
-    public ResponseEntity<?> addCommentToRecipe(@PathVariable("recipeId") Long recipeId, @RequestBody CommentAddDTO commentAddDTO) {
-        Comment comment = commentService.saveComment(commentAddDTO, recipeId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(comment);
+    public ResponseEntity<CommentAddResponse> addCommentToRecipe(@PathVariable("recipeId") Long recipeId,
+                                                                 @RequestBody CommentAddRequest request) {
+        CommentAddResponse response = commentService.saveComment(request, recipeId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

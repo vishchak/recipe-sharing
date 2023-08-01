@@ -1,8 +1,8 @@
 package com.gmail.vishchak.denis.recipesharing.service;
 
-import com.gmail.vishchak.denis.recipesharing.dto.comment.CommentAddDTO;
-import com.gmail.vishchak.denis.recipesharing.model.Comment;
+import com.gmail.vishchak.denis.recipesharing.dto.comment.CommentAddRequest;
+import com.gmail.vishchak.denis.recipesharing.dto.comment.CommentAddResponse;
 
 public interface CommentService {
-    Comment saveComment(CommentAddDTO commentAddDTO, Long recipeId);
+    CommentAddResponse saveComment(CommentAddRequest request, Long recipeId);
 }
